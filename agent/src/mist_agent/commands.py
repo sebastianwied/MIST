@@ -1,11 +1,12 @@
 """Command parsing and dispatch."""
 
+from .persona_command import handle_persona
 from .respond import handle_text
 from .summarize import handle_summarize
 from .util import handle_status, stop_model
 
 # Commands that are recognised as single bare words (no arguments).
-_BARE_COMMANDS = {"status", "summarize", "stop", "debug"}
+_BARE_COMMANDS = {"status", "summarize", "stop", "debug", "persona"}
 
 
 def dispatch(line: str, source: str = "terminal") -> str | None:
@@ -23,6 +24,8 @@ def dispatch(line: str, source: str = "terminal") -> str | None:
         handle_summarize()
     elif word == "stop":
         stop_model()
+    elif word == "persona":
+        handle_persona()
     elif word == "debug":
         pass
     else:

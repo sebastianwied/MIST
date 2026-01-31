@@ -1,0 +1,9 @@
+[project]
+name = "mist-agent"
+version = "0.1.0"
+description = "Local-first reflective AI companion REPL"
+requires-python = ">=3.13"
+dependencies = ["ollama"]
+
+[project.scripts]
+mist-repl = "mist_agent.main:repl"

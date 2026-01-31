@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.egg-info/
+*.pyc
+*.pyo
+env/
+
+# Xcode user data
+xcuserdata/
+xcshareddata/
