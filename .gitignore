@@ -11,3 +11,8 @@ env/
 # Xcode user data
 xcuserdata/
 xcshareddata/
+
+# User data (notes, journal, state)
+data/notes/
+data/agentJournal.md
+data/state/

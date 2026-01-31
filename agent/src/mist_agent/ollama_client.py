@@ -5,16 +5,26 @@ from pathlib import Path
 from ollama import chat, ChatResponse
 
 MODEL_PATH = Path("data/config/model.conf")
+DEEP_MODEL_PATH = Path("data/config/deep_model.conf")
 DEFAULT_MODEL = "gemma3:1b"
 
 
-def _load_model() -> str:
+def load_model() -> str:
     """Read the model name from disk, falling back to the default."""
     try:
         name = MODEL_PATH.read_text(encoding="utf-8").strip()
         return name or DEFAULT_MODEL
     except FileNotFoundError:
         return DEFAULT_MODEL
+
+
+def load_deep_model() -> str:
+    """Read the deep model name from disk, falling back to the regular model."""
+    try:
+        name = DEEP_MODEL_PATH.read_text(encoding="utf-8").strip()
+        return name or load_model()
+    except FileNotFoundError:
+        return load_model()
 
 
 def call_ollama(
@@ -28,7 +38,7 @@ def call_ollama(
     If *system* is provided it is prepended as a system message.
     """
     if model is None:
-        model = _load_model()
+        model = load_model()
     messages: list[dict[str, str]] = []
     if system:
         messages.append({"role": "system", "content": system})

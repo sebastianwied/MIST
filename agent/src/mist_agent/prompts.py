@@ -74,3 +74,52 @@ Recent notes:
 
 Summary:
 """
+
+RECALL_PROMPT = """\
+You are a memory-search assistant. The user wants to find past thoughts on a topic.
+
+Below are all their logged entries:
+
+{entries}
+
+The user is searching for: {query}
+
+Return only the entries that are relevant to the query, grouped by theme if \
+possible. Quote the original text and include timestamps. If nothing is \
+relevant, say so briefly."""
+
+SYNC_PROMPT = """\
+You are maintaining a living synthesis document that captures the user's \
+evolving ideas, themes, and open questions.
+
+Here is the current synthesis:
+
+{current_synthesis}
+
+Here are all logged entries:
+
+{new_entries}
+
+Update the synthesis document:
+- Add new sections for new themes that appear in the entries.
+- Update existing sections with new information or developments.
+- Retire or remove sections that are no longer relevant.
+- Use markdown headings (##) for each theme/section.
+- Be concise. Capture the essence, not every detail.
+
+Output the complete updated synthesis document and nothing else."""
+
+RESYNTH_PROMPT = """\
+You are writing a fresh synthesis of all the user's logged thoughts and ideas.
+
+Here are all their entries:
+
+{all_entries}
+
+Write a synthesis document from scratch:
+- Group ideas into coherent themes using markdown headings (##).
+- Identify recurring patterns, open questions, and connections between ideas.
+- Be concise. Capture the essence, not every detail.
+- Do not invent information or add advice.
+
+Output only the synthesis document."""
