@@ -10,9 +10,10 @@ from .profile import (
 )
 from .prompts import PROFILE_EXTRACTION_PROMPT
 from .storage import parse_rawlog
+from .types import Writer
 
 
-def handle_profile() -> None:
+def handle_profile(output: Writer = print) -> None:
     """Extract user facts from new rawLog entries and update user.md."""
     entries = parse_rawlog()
     high_water = get_last_profile_update_time()
@@ -23,12 +24,12 @@ def handle_profile() -> None:
     current_profile = load_user_profile()
 
     if not entries:
-        print("No new entries to process.\n")
-        print("Current profile:\n")
-        print(current_profile)
+        output("No new entries to process.\n")
+        output("Current profile:\n")
+        output(current_profile)
         return
 
-    print(f"Extracting profile from {len(entries)} entries...")
+    output(f"Extracting profile from {len(entries)} entries...")
     formatted = _format_entries(entries)
     prompt = PROFILE_EXTRACTION_PROMPT.format(
         current_profile=current_profile,
@@ -38,4 +39,4 @@ def handle_profile() -> None:
 
     save_user_profile(updated)
     set_last_profile_update_time(entries[-1].time)
-    print("Profile updated → data/config/user.md")
+    output("Profile updated → data/config/user.md")

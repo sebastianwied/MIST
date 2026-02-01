@@ -2,10 +2,12 @@
 
 import subprocess
 
+from .types import Writer
 
-def handle_status() -> None:
+
+def handle_status(output: Writer = print) -> None:
     """Print a brief status report (placeholder)."""
-    print("status check...")
+    output("status check...")
 
 
 def stop_model(model: str = "gemma3:1b") -> None:

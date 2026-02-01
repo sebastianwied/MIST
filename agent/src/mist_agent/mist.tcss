@@ -1,0 +1,53 @@
+Screen {
+    background: $surface;
+}
+
+#banner {
+    width: 1fr;
+    height: auto;
+    color: $primary;
+    text-style: bold;
+    padding: 0 1;
+}
+
+#status-bar {
+    width: 1fr;
+    height: 1;
+    color: $text-muted;
+    background: $surface-darken-1;
+    padding: 0 1;
+}
+
+#main-container {
+    height: 1fr;
+}
+
+#chat-log {
+    width: 1fr;
+    height: 1fr;
+    border: round $primary-darken-2;
+    padding: 0 1;
+}
+
+#file-viewer {
+    width: 40%;
+    height: 1fr;
+    display: none;
+    border: round $secondary-darken-2;
+    padding: 0 1;
+}
+
+#file-viewer-md {
+    width: 1fr;
+}
+
+#command-input {
+    dock: bottom;
+    width: 1fr;
+    margin-bottom: 2;
+    border: tall $primary-darken-1;
+}
+
+Footer {
+    dock: bottom;
+}

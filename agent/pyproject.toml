@@ -3,7 +3,8 @@ name = "mist-agent"
 version = "0.1.0"
 description = "Local-first reflective AI companion REPL"
 requires-python = ">=3.13"
-dependencies = ["ollama"]
+dependencies = ["ollama", "textual>=0.89"]
 
 [project.scripts]
 mist-repl = "mist_agent.main:repl"
+mist = "mist_agent.main:tui"

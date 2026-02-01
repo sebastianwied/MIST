@@ -7,10 +7,6 @@ SYSTEM_PROMPT = """\
 {user_profile}
 --------------------
 
---- CONTEXT ---
-{context}
----------------
-
 You must follow these constraints strictly:
 
 1. Do not give advice, recommendations, or instructions unless explicitly asked.
@@ -22,6 +18,7 @@ You must follow these constraints strictly:
 Response style rules:
 - Respond in 1\u20133 sentences.
 - Use plain, neutral language.
+- Prefer reflective phrasing (e.g., "It sounds like\u2026", "This seems to connect to\u2026").
 - If something is ambiguous, say so explicitly.
 - If the input is factual or logistical, acknowledge it briefly.
 
@@ -33,6 +30,7 @@ Interpretation guidelines:
 
 You are allowed to:
 - paraphrase the input
+- point out patterns or themes if they are obvious from the single input
 - mention uncertainty or incompleteness
 
 You are NOT allowed to:
@@ -94,88 +92,41 @@ Return only the entries that are relevant to the query, grouped by theme if \
 possible. Quote the original text and include timestamps. If nothing is \
 relevant, say so briefly."""
 
-TOPIC_SYNC_PROMPT = """\
-You are maintaining a set of topic summaries that capture the user's \
+SYNC_PROMPT = """\
+You are maintaining a living synthesis document that captures the user's \
 evolving ideas, themes, and open questions.
 
-Here are the existing topic summaries:
+Here is the current synthesis:
 
-{existing_topics}
+{current_synthesis}
 
-Here are new logged entries since last sync:
+Here are all logged entries:
 
 {new_entries}
 
-Update the topic summaries:
-- Each topic must start with a ## heading on its own line.
-- Add new ## sections for new themes that appear in the entries.
+Update the synthesis document:
+- Add new sections for new themes that appear in the entries.
 - Update existing sections with new information or developments.
-- If a topic is no longer relevant, simply omit it from the output.
+- Retire or remove sections that are no longer relevant.
+- Use markdown headings (##) for each theme/section.
 - Be concise. Capture the essence, not every detail.
-- Do not add any text before the first ## heading.
 
-Output the complete updated set of topic summaries and nothing else."""
+Output the complete updated synthesis document and nothing else."""
 
-TOPIC_RESYNTH_PROMPT = """\
-You are writing a fresh set of topic summaries from all the user's logged \
-thoughts and ideas.
+RESYNTH_PROMPT = """\
+You are writing a fresh synthesis of all the user's logged thoughts and ideas.
 
 Here are all their entries:
 
 {all_entries}
 
-Write topic summaries from scratch:
-- Each topic must start with a ## heading on its own line.
-- Group ideas into coherent themes.
+Write a synthesis document from scratch:
+- Group ideas into coherent themes using markdown headings (##).
 - Identify recurring patterns, open questions, and connections between ideas.
 - Be concise. Capture the essence, not every detail.
 - Do not invent information or add advice.
-- Do not add any text before the first ## heading.
 
-Output only the topic summaries."""
-
-CONTEXT_GEN_PROMPT = """\
-You are generating a concise context summary from the user's topic summaries.
-
-Here are all the current topic summaries:
-
-{all_topics}
-
-Write a short third-person summary (under 300 words) that captures:
-- What the user is currently focused on
-- Active projects or areas of work
-- Open questions or unresolved ideas
-- Key interests and recurring themes
-
-Do not invent information. Do not give advice. Write in plain, neutral language.
-Output only the summary text."""
-
-EXTRACTION_PROMPT = """\
-You are analyzing a user's message for any tasks or calendar events they mention.
-
-User message:
-{text}
-
-Extract any tasks (things to do) or events (things happening at a specific time) \
-from the message. Return a JSON object with two arrays: "tasks" and "events".
-
-Each task object has:
-- "title": string (short description)
-- "due_date": string "YYYY-MM-DD" or null
-
-Each event object has:
-- "title": string (short description)
-- "start_time": string "YYYY-MM-DDTHH:MM" or null
-- "end_time": string "YYYY-MM-DDTHH:MM" or null
-- "frequency": one of "daily", "weekly", "monthly", "yearly", or null
-
-If no tasks or events are found, return: {{"tasks": [], "events": []}}
-
-Rules:
-- Only extract items that are clearly stated or strongly implied.
-- Do not invent tasks or events that are not in the message.
-- If a date/time is vague or missing, use null.
-- Output ONLY valid JSON, nothing else."""
+Output only the synthesis document."""
 
 PROFILE_EXTRACTION_PROMPT = """\
 You are extracting factual information about the user from their conversation log.

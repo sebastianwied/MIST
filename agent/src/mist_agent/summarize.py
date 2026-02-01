@@ -11,9 +11,10 @@ from .storage import (
     parse_rawlog,
     set_last_summarized_time,
 )
+from .types import Writer
 
 
-def handle_summarize() -> None:
+def handle_summarize(output: Writer = print) -> None:
     """Summarise new rawLog entries since the last summarize, append to journal."""
     entries = parse_rawlog()
     high_water = get_last_summarized_time()
@@ -22,10 +23,10 @@ def handle_summarize() -> None:
         entries = [e for e in entries if e.time > high_water]
 
     if not entries:
-        print("No new entries to summarize.")
+        output("No new entries to summarize.")
         return
 
-    print(f"Summarizing {len(entries)} entries...")
+    output(f"Summarizing {len(entries)} entries...")
     formatted = _format_entries(entries)
     prompt = SUMMARIZATION_PROMPT.format(notes=formatted)
     summary = call_ollama(prompt)
@@ -39,4 +40,4 @@ def handle_summarize() -> None:
         f.write("\n")
 
     set_last_summarized_time(entries[-1].time)
-    print("Summary appended to data/agentJournal.md.")
+    output("Summary appended to data/agentJournal.md.")
