@@ -2,6 +2,7 @@
 
 from .notes import handle_note, handle_notes, handle_recall
 from .persona_command import handle_persona
+from .profile_command import handle_profile
 from .respond import handle_text
 from .summarize import handle_summarize
 from .synthesis import handle_resynth, handle_sync
@@ -43,6 +44,9 @@ def dispatch(line: str, source: str = "terminal") -> str | None:
         return None
     if stripped == "status":
         handle_status()
+        return None
+    if stripped == "profile":
+        handle_profile()
         return None
     if stripped == "persona":
         handle_persona()

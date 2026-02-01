@@ -3,6 +3,10 @@
 SYSTEM_PROMPT = """\
 {persona}
 
+--- USER PROFILE ---
+{user_profile}
+--------------------
+
 You must follow these constraints strictly:
 
 1. Do not give advice, recommendations, or instructions unless explicitly asked.
@@ -123,3 +127,28 @@ Write a synthesis document from scratch:
 - Do not invent information or add advice.
 
 Output only the synthesis document."""
+
+PROFILE_EXTRACTION_PROMPT = """\
+You are extracting factual information about the user from their conversation log.
+
+Here is the current user profile (may be empty or a placeholder):
+
+--- CURRENT PROFILE ---
+{current_profile}
+-----------------------
+
+Here are new conversation entries to process:
+
+{entries}
+
+Instructions:
+- Extract concrete facts about the user: name, occupation, interests, projects, \
+preferences, goals, location, tools they use, people they mention, etc.
+- Merge new facts with the existing profile. Do not drop existing facts unless \
+they are clearly contradicted by newer entries.
+- If an entry is ambiguous or does not contain personal facts, skip it.
+- Do not invent or infer information that is not explicitly stated.
+- Output a clean, structured markdown document using headings (##) for categories.
+- Keep it concise — facts only, no commentary.
+
+Output the complete updated user profile document and nothing else."""
