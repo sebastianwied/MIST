@@ -16,6 +16,9 @@ xcshareddata/
 data/notes/
 data/agentJournal.md
 data/state/
-data/synthesis
+data/synthesis/
+data/topics/
+data/mist.db
 data/config/user.md
+data/config/deep_model.conf
 

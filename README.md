@@ -1,20 +1,28 @@
 # MIST
 
-A local-first reflective AI companion with a macOS desktop app, a CLI REPL, and a FastAPI backend. All components talk to a local [Ollama](https://ollama.com) instance — no cloud dependencies.
+A local-first reflective AI companion with a macOS desktop app, a CLI REPL, a TUI, and a FastAPI backend. All components talk to a local [Ollama](https://ollama.com) instance — no cloud dependencies.
 
 ## Quick Start
 
 ```bash
-# Prerequisites: Python 3.13, Ollama with a model pulled (default: gemma3:1b)
+# Prerequisites: Python 3.13, Ollama running with a model pulled (default: gemma3:1b)
 
-# Activate the Python venv
+# Create and activate a Python venv
+python3 -m venv env
 source env/bin/activate
+
+# Install the agent package (editable) and the server package
+pip install -e ./agent
+pip install -e ./server
+
+# Run the TUI (recommended)
+mist
+
+# Or run the plain REPL
+mist-repl
 
 # Start the FastAPI server (required for the desktop app)
 uvicorn server.app:app --host 127.0.0.1 --port 8765
-
-# Run the CLI
-python -m mist_agent.main
 ```
 
 Build the macOS desktop app in Xcode: open `desktop/MistAvatar/MistAvatar.xcodeproj` and run.
@@ -28,18 +36,23 @@ data/
 ├── config/
 │   ├── persona.md                   # Agent personality
 │   ├── user.md                      # Extracted user profile
-│   ├── model.conf                   # Ollama model name
+│   ├── model.conf                   # Ollama model name (default: gemma3:1b)
 │   ├── deep_model.conf              # Model for resynth (fallback: model.conf)
 │   ├── settings.json                # Agency mode, context windows
 │   └── avatar.png                   # Desktop app avatar (optional)
 ├── notes/
-│   ├── rawLog.md                    # Timestamped log of all user input
-│   └── rawLog_archive.md            # Rotated older entries
+│   ├── rawLog.jsonl                 # JSONL log of all user input
+│   └── archive.jsonl                # Entries moved out during aggregation
+├── topics/
+│   ├── index.json                   # Topic metadata
+│   └── <slug>/                      # Per-topic directory
+│       ├── noteLog.jsonl            # Topic-specific entries
+│       ├── synthesis.md             # Topic synthesis
+│       └── about.md                 # Topic description (optional)
 ├── synthesis/
-│   ├── context.md                   # Condensed context injected into prompts
-│   └── *.md                         # Per-topic synthesis files
+│   └── context.md                   # Condensed context injected into prompts
 └── state/
-    ├── last_summarized.txt          # Timestamp bookmark for summarize
+    ├── last_aggregate.txt           # Timestamp bookmark for aggregate
     └── last_sync.txt                # Timestamp bookmark for sync
 ```
 
@@ -52,9 +65,13 @@ data/
 | `note <text>` | Save a note silently (no LLM call) |
 | `notes` | List recent notes |
 | `recall <topic>` | Search all past input via LLM |
-| `sync` | Update the master synthesis file with new themes |
-| `resynth` | Full rewrite of the synthesis file using the deep model |
-| `summarize` | Summarize new log entries into the journal |
+| `aggregate` | Classify new log entries into topics via LLM |
+| `topic add <name>` | Manually create a topic |
+| `topic about <id\|slug> [text]` | View or set a topic description |
+| `reset topics` | Undo aggregation — move topic entries back to rawLog |
+| `sync` | Update per-topic synthesis files with new entries |
+| `resynth` | Full rewrite of all synthesis files using the deep model |
+| `synthesis <id\|slug>` | Resynthesize a single topic |
 | Free text | Reflected back by the agent (may detect tasks/events depending on agency setting) |
 
 ### Tasks
@@ -85,7 +102,8 @@ Recurrence frequencies: `daily`, `weekly`, `monthly`, `yearly`.
 | `persona` | Interactively edit the agent's personality via LLM |
 | `view <name>` | Display a file or data view (`persona`, `user`, `tasks`, `events`, `synthesis`, etc.) |
 | `status` | Show system status |
-| `stop` | Stop the model |
+| `stop` | Unload the model |
+| `help` | Show available commands |
 
 Available settings:
 
@@ -102,19 +120,18 @@ All configuration lives in `data/config/`:
 | File | Purpose |
 |------|---------|
 | `persona.md` | Agent personality — edit directly or via the `persona` REPL command |
-| `model.conf` | Ollama model name (one line, e.g. `gemma3:12b`) |
-| `deep_model.conf` | Model used by `resynth` (falls back to `model.conf`) |
+| `model.conf` | Ollama model name (one line, e.g. `gemma3:1b`). Read on every call, so edits take effect immediately |
+| `deep_model.conf` | Model used by `resynth` and `synthesis` (falls back to `model.conf` if absent) |
 | `settings.json` | Agent settings (agency mode, context windows) — managed via `set` command |
 | `avatar.png` | Desktop app avatar image (optional, falls back to diamond icon) |
 
-Data is stored in `data/`:
+## Entry Points
 
-| Path | Purpose |
-|------|---------|
-| `data/mist.db` | SQLite database for tasks and events |
-| `data/notes/rawLog.md` | Timestamped log of all user input |
-| `data/agentJournal.md` | Summarized journal entries |
-| `data/synthesis/` | Topic synthesis files and context summary |
+| Command | Source | Description |
+|---------|--------|-------------|
+| `mist` | `agent/pyproject.toml` | Textual TUI (recommended) |
+| `mist-repl` | `agent/pyproject.toml` | Plain terminal REPL |
+| `uvicorn server.app:app` | `server/` | FastAPI server for the desktop app |
 
 ## API
 
@@ -124,4 +141,4 @@ Data is stored in `data/`:
 
 ## Dependencies
 
-Python: `fastapi`, `uvicorn`, `ollama`
+Python: `ollama`, `textual`, `fastapi`, `uvicorn`
