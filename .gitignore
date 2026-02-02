@@ -20,5 +20,9 @@ data/synthesis/
 data/topics/
 data/mist.db
 data/config/user.md
+data/config/persona.md
+data/config/model.conf
 data/config/deep_model.conf
+data/config/avatar.png
+data/config/settings.json
 

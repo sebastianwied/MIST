@@ -112,17 +112,23 @@ Available settings:
 | `agency_mode` | `suggest`, `auto`, `off` | `suggest` | How the agent handles detected tasks/events in free text |
 | `context_tasks_days` | integer | `7` | Days of upcoming tasks injected into agent context |
 | `context_events_days` | integer | `3` | Days of upcoming events injected into agent context |
+| `model` | model name | `gemma3:1b` | Default Ollama model for all commands |
+| `model_<cmd>` | model name | (inherits `model`) | Per-command model override (e.g. `model_resynth`) |
+
+Available per-command model keys: `model_reflect`, `model_recall`, `model_sync`, `model_resynth`, `model_synthesis`, `model_aggregate`, `model_extract`, `model_persona`, `model_profile`.
 
 ## Configuration
+
+Config files are auto-created from defaults on first run and are gitignored so `git pull` never overwrites them.
 
 All configuration lives in `data/config/`:
 
 | File | Purpose |
 |------|---------|
 | `persona.md` | Agent personality — edit directly or via the `persona` REPL command |
-| `model.conf` | Ollama model name (one line, e.g. `gemma3:1b`). Read on every call, so edits take effect immediately |
-| `deep_model.conf` | Model used by `resynth` and `synthesis` (falls back to `model.conf` if absent) |
-| `settings.json` | Agent settings (agency mode, context windows) — managed via `set` command |
+| `model.conf` | Legacy model name file (use `set model <name>` instead; migrated to settings.json on startup) |
+| `deep_model.conf` | Legacy deep model file (migrated to `model_resynth`/`model_synthesis` on startup) |
+| `settings.json` | All settings including model selection — managed via `set` command |
 | `avatar.png` | Desktop app avatar image (optional, falls back to diamond icon) |
 
 ## Entry Points

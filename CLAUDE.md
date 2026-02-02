@@ -74,7 +74,7 @@ Python dependencies: `ollama`, `textual`, `fastapi`, `uvicorn`
 | Task store | `agent/src/mist_agent/task_store.py` | SQLite-backed task CRUD |
 | Event store | `agent/src/mist_agent/event_store.py` | SQLite-backed event CRUD with recurrence |
 | Database | `agent/src/mist_agent/db.py` | SQLite connection and schema |
-| Ollama client | `agent/src/mist_agent/ollama_client.py` | Ollama API wrapper (standard + deep model) |
+| Ollama client | `agent/src/mist_agent/ollama_client.py` | Ollama API wrapper with per-command model resolution |
 | Prompts | `agent/src/mist_agent/prompts.py` | All LLM prompt templates |
 | Desktop app | `desktop/MistAvatar/MistAvatar/` | SwiftUI macOS app |
 | Data store | `data/` | JSONL logs, SQLite database, markdown synthesis files |
@@ -90,13 +90,16 @@ The macOS app runs as a menu-bar-style accessory (no dock icon). `AppDelegate` c
 
 ## Configuration
 
-All user-editable config is in `data/config/`:
+Config files in `data/config/` are gitignored and auto-created from defaults on first run.
+
 - `persona.md` — agent personality (editable via `persona` REPL command or by hand)
-- `model.conf` — Ollama model name, one line (e.g. `gemma3:1b`)
-- `deep_model.conf` — model for synthesis commands (falls back to `model.conf`)
+- `settings.json` — all settings including model selection (`set model <name>`, `set model_resynth <name>`, etc.)
+- `model.conf` — legacy model name file (migrated to settings.json on startup; use `set model` instead)
+- `deep_model.conf` — legacy deep model file (migrated to `model_resynth`/`model_synthesis` on startup)
 - `avatar.png` — optional custom avatar image for the desktop app
 
-The model and persona are read from disk on every call, so edits take effect immediately.
+Model resolution chain: `settings.model_<command>` → `settings.model` → `model.conf` → built-in default (`gemma3:1b`).
+Settings are read from disk on every call, so edits take effect immediately.
 
 ## Data Flow
 
