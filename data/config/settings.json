@@ -1,0 +1,10 @@
+{
+    "agency_mode": "suggest",
+    "context_tasks_days": 7,
+    "context_events_days": 3,
+    "model": "gemma3:1b",
+    "model_resynth": "gemma3:12b",
+    "model_synthesis": "gemma3:12b",
+    "model_aggregate": "gemma3:12b",
+    "model_sync": "gemma3:4b"
+}
