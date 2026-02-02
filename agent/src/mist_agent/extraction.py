@@ -26,7 +26,7 @@ def extract_items(text: str) -> dict[str, list[dict[str, Any]]]:
     On parse failure returns empty lists.
     """
     prompt = EXTRACTION_PROMPT.format(text=text)
-    raw = call_ollama(prompt, temperature=0.1)
+    raw = call_ollama(prompt, temperature=0.1, command="extract")
     cleaned = _strip_code_fences(raw)
     try:
         data = json.loads(cleaned)

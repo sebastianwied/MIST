@@ -40,7 +40,7 @@ def handle_profile(output: Writer = print, entries: list[RawLogEntry] | None = N
         current_profile=current_profile,
         entries=formatted,
     )
-    updated = call_ollama(prompt)
+    updated = call_ollama(prompt, command="profile")
 
     save_user_profile(updated)
     set_last_profile_update_time(entries[-1].time)

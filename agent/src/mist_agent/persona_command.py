@@ -74,7 +74,7 @@ def _generate_draft(current: str, user_input: str) -> str:
         current_persona=current,
         user_input=user_input,
     )
-    return call_ollama(prompt)
+    return call_ollama(prompt, command="persona")
 
 
 def _present_draft(

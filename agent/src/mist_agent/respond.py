@@ -80,4 +80,4 @@ def handle_text(text: str, source: str = "terminal") -> str:
         persona=persona, user_profile=user_profile, context=context,
     )
     prompt = USER_PROMPT.format(text=text)
-    return call_ollama(prompt, system=system)
+    return call_ollama(prompt, system=system, command="reflect")

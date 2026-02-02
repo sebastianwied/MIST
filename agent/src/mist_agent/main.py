@@ -5,6 +5,7 @@ import threading
 from contextlib import contextmanager
 
 from .commands import dispatch
+from .migrate import migrate_model_conf
 
 _SPINNER_CHARS = "|/-\\"
 
@@ -63,6 +64,7 @@ def _spinner_label(line: str) -> str | None:
 
 def repl() -> None:
     """Run the interactive read-eval-print loop (plain terminal fallback)."""
+    migrate_model_conf()
     while True:
         try:
             line = input("> ").strip()
@@ -88,6 +90,7 @@ def repl() -> None:
 
 def tui() -> None:
     """Launch the Textual TUI."""
+    migrate_model_conf()
     from .tui import MistApp
 
     MistApp().run()

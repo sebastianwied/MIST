@@ -3,8 +3,9 @@
 import re
 
 from .notes import _format_entries
-from .ollama_client import call_ollama, load_deep_model
+from .ollama_client import call_ollama
 from .prompts import CONTEXT_GEN_PROMPT, TOPIC_RESYNTH_PROMPT, TOPIC_SYNC_PROMPT
+from .settings import get_model
 from .storage import (
     find_topic,
     get_last_sync_time,
@@ -38,7 +39,7 @@ def _generate_context(output: Writer = print) -> None:
         f"## {slug}\n{content}" for slug, content in topics.items()
     )
     prompt = CONTEXT_GEN_PROMPT.format(all_topics=all_topics)
-    result = call_ollama(prompt)
+    result = call_ollama(prompt, command="sync")
     save_context(result)
     output("Context updated (data/synthesis/context.md).")
 
@@ -72,7 +73,7 @@ def handle_sync(output: Writer = print) -> None:
             current_synthesis=current_synthesis or "(no existing synthesis)",
             new_entries=formatted,
         )
-        result = call_ollama(prompt)
+        result = call_ollama(prompt, command="sync")
         save_topic_synthesis(topic.slug, result)
         output(f"  Updated: {topic.name}")
         any_updated = True
@@ -94,9 +95,9 @@ def handle_sync(output: Writer = print) -> None:
 # --- Resynth (per-topic full rewrite) ---
 
 def handle_resynth(output: Writer = print) -> None:
-    """Full rewrite of each topic's synthesis using the deep model."""
-    deep_model = load_deep_model()
-    output(f"Deep resynthesis using {deep_model}...")
+    """Full rewrite of each topic's synthesis using the resynth model."""
+    model = get_model("resynth")
+    output(f"Deep resynthesis using {model}...")
 
     index = load_topic_index()
     if not index:
@@ -114,7 +115,7 @@ def handle_resynth(output: Writer = print) -> None:
             topic_name=topic.name,
             all_entries=formatted,
         )
-        result = call_ollama(prompt, model=deep_model)
+        result = call_ollama(prompt, command="resynth")
         save_topic_synthesis(topic.slug, result)
         output(f"  Resynthesized: {topic.name}")
 
@@ -131,7 +132,7 @@ def handle_resynth(output: Writer = print) -> None:
 # --- Single-topic synthesis ---
 
 def handle_synthesis(identifier: str, output: Writer = print) -> None:
-    """Resynthesize a single topic by id or slug using the deep model."""
+    """Resynthesize a single topic by id or slug using the synthesis model."""
     if not identifier:
         output("Usage: synthesis <id|slug>")
         return
@@ -141,8 +142,8 @@ def handle_synthesis(identifier: str, output: Writer = print) -> None:
         output(f"Topic '{identifier}' not found. Use 'view topics' to list.")
         return
 
-    deep_model = load_deep_model()
-    output(f"Resynthesizing '{topic.name}' using {deep_model}...")
+    model = get_model("synthesis")
+    output(f"Resynthesizing '{topic.name}' using {model}...")
 
     entries = load_topic_notelog(topic.slug)
     if not entries:
@@ -154,7 +155,7 @@ def handle_synthesis(identifier: str, output: Writer = print) -> None:
         topic_name=topic.name,
         all_entries=formatted,
     )
-    result = call_ollama(prompt, model=deep_model)
+    result = call_ollama(prompt, command="synthesis")
     save_topic_synthesis(topic.slug, result)
     output(f"Synthesis updated for '{topic.name}'.")
 

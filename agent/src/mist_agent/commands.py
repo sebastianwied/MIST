@@ -7,7 +7,7 @@ from .extraction import apply_extracted_items, extract_items
 from .notes import handle_note, handle_notes, handle_recall
 from .persona_command import handle_persona
 from .respond import handle_text
-from .settings import get_setting, load_settings, set_setting
+from .settings import get_model, get_setting, is_valid_setting_key, load_settings, MODEL_COMMANDS, set_setting
 from .aggregate import handle_aggregate, handle_reset_topics, handle_topic_about, handle_topic_add
 from .synthesis import handle_resynth, handle_sync, handle_synthesis
 from .task_command import (
@@ -50,9 +50,26 @@ def _dispatch_event(sub: str, arg: str, output: Writer) -> None:
 def _handle_settings(output: Writer) -> None:
     """Display all current settings."""
     settings = load_settings()
+
+    # Non-model settings first
     output("Current settings:")
     for k, v in sorted(settings.items()):
+        if k.startswith("model"):
+            continue
         output(f"  {k} = {v}")
+
+    # Models section
+    default_model = get_model()
+    output("")
+    output("Models:")
+    output(f"  model = {default_model}  (default)")
+    for cmd in MODEL_COMMANDS:
+        key = f"model_{cmd}"
+        override = settings.get(key, "")
+        if override:
+            output(f"  {key} = {override}")
+        else:
+            output(f"  {key} = ({default_model})")
 
 
 _HELP_TEXT = """\
@@ -80,6 +97,8 @@ Commands:
   edit <name>                  Edit a file in the TUI panel
   settings                     Show settings
   set <key> <value>            Change a setting
+  set model <name>             Set the default model
+  set model_<cmd> <name>       Set a per-command model override
   status                       System status
   stop                         Unload model
   help                         Show this help"""
@@ -97,6 +116,8 @@ def _handle_set(arg: str, output: Writer) -> None:
         value = int(raw_value)
     except ValueError:
         value = raw_value
+    if not is_valid_setting_key(key):
+        output(f"Warning: '{key}' is not a recognised setting key.")
     set_setting(key, value)
     output(f"Setting '{key}' set to '{value}'.")
 

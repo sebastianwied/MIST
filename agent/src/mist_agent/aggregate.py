@@ -125,7 +125,7 @@ def classify_entries(
     )
 
     for attempt in range(1, MAX_CLASSIFY_RETRIES + 1):
-        result = call_ollama(prompt)
+        result = call_ollama(prompt, command="aggregate")
         assignments = _parse_assignments(result, len(entries))
         if assignments:
             break

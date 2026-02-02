@@ -138,5 +138,35 @@ def migrate() -> None:
     print("\nMigration complete.")
 
 
+def migrate_model_conf() -> None:
+    """Copy model.conf / deep_model.conf values into settings.json (idempotent).
+
+    - If model.conf exists and settings.model is empty → copy value to settings.
+    - If deep_model.conf exists and model_resynth/model_synthesis are empty → copy.
+    """
+    from .ollama_client import MODEL_PATH
+    from .settings import get_setting, set_setting
+
+    # model.conf → settings.model
+    try:
+        name = MODEL_PATH.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        name = ""
+    if name and not get_setting("model"):
+        set_setting("model", name)
+
+    # deep_model.conf → model_resynth / model_synthesis
+    deep_path = Path("data/config/deep_model.conf")
+    try:
+        deep_name = deep_path.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        deep_name = ""
+    if deep_name:
+        if not get_setting("model_resynth"):
+            set_setting("model_resynth", deep_name)
+        if not get_setting("model_synthesis"):
+            set_setting("model_synthesis", deep_name)
+
+
 if __name__ == "__main__":
     migrate()

@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from .settings import get_model, MODEL_COMMANDS
 from .storage import CONTEXT_PATH, RAWLOG_PATH, load_topic_about, load_topic_files, load_topic_index
 from .task_command import handle_task_list
 from .event_command import handle_event_list
@@ -10,13 +11,12 @@ from .types import Writer
 VIEWABLE_FILES: dict[str, Path] = {
     "persona": Path("data/config/persona.md"),
     "user": Path("data/config/user.md"),
-    "model": Path("data/config/model.conf"),
     "rawlog": RAWLOG_PATH,
     "context": CONTEXT_PATH,
 }
 
 # Keys that are handled specially (not simple file reads).
-_VIRTUAL_KEYS = {"synthesis", "tasks", "events", "topics"}
+_VIRTUAL_KEYS = {"synthesis", "tasks", "events", "topics", "model"}
 
 # All file-backed keys (excludes virtual keys) — safe to open in an editor.
 EDITABLE_FILES: set[str] = set(VIEWABLE_FILES)
@@ -38,6 +38,37 @@ def _all_viewable_keys() -> list[str]:
     return sorted(set(VIEWABLE_FILES) | _VIRTUAL_KEYS)
 
 
+def _show_model(output: Writer) -> None:
+    """Display the default model, its source, and per-command overrides."""
+    from .ollama_client import _load_model_conf
+    from .settings import load_settings
+
+    settings = load_settings()
+    default = get_model()
+
+    # Determine source of the default
+    settings_model = settings.get("model", "")
+    conf_model = _load_model_conf()
+    if settings_model:
+        source = "settings.json"
+    elif conf_model:
+        source = "model.conf"
+    else:
+        source = "built-in default"
+
+    output(f"Default model: {default}  (source: {source})")
+    output("")
+    output("Per-command models:")
+    for cmd in MODEL_COMMANDS:
+        key = f"model_{cmd}"
+        override = settings.get(key, "")
+        resolved = get_model(cmd)
+        if override:
+            output(f"  {cmd:12s}  {override}")
+        else:
+            output(f"  {cmd:12s}  ({resolved})")
+
+
 def handle_view(name: str | None, output: Writer = print) -> None:
     """Display a viewable file. With no argument, list available names."""
     if name is None:
@@ -45,6 +76,11 @@ def handle_view(name: str | None, output: Writer = print) -> None:
         return
 
     key = name.lower()
+
+    # Virtual key: model — show resolution table
+    if key == "model":
+        _show_model(output)
+        return
 
     # Virtual key: synthesis — concatenate all topic synthesis files
     if key == "synthesis":

@@ -36,4 +36,4 @@ def handle_recall(query: str) -> str:
         return "No entries to search."
     formatted = _format_entries(entries)
     prompt = RECALL_PROMPT.format(entries=formatted, query=query)
-    return call_ollama(prompt)
+    return call_ollama(prompt, command="recall")

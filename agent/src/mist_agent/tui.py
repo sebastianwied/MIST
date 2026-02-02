@@ -12,7 +12,7 @@ from textual.worker import Worker, WorkerState
 from .aggregate import classify_entries, route_entries
 from .commands import dispatch
 from .event_command import handle_event_list
-from .ollama_client import load_model
+from .settings import get_model
 from .persona import load_persona, save_persona
 from .persona_command import _generate_draft
 from .storage import load_topic_about, load_topic_files, load_topic_index, parse_rawlog
@@ -87,7 +87,7 @@ class MistApp(App):
     # ── status bar ──────────────────────────────────────────────
 
     def _build_status(self) -> str:
-        model = load_model()
+        model = get_model()
         persona = load_persona()
         preview = persona.replace("\n", " ")[:60]
         return f"Model: {model}  |  Persona: {preview}"
