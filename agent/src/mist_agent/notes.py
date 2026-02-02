@@ -2,7 +2,7 @@
 
 from .ollama_client import call_ollama
 from .prompts import RECALL_PROMPT
-from .storage import RawLogEntry, parse_rawlog, parse_rawlog_full, save_raw_input
+from .storage import RawLogEntry, parse_all_entries, parse_rawlog, save_raw_input
 from .types import Writer
 
 
@@ -30,8 +30,8 @@ def handle_notes(count: int = 10, output: Writer = print) -> None:
 
 
 def handle_recall(query: str) -> str:
-    """Search all past entries (including archived) via LLM and return the response."""
-    entries = parse_rawlog_full()
+    """Search all past entries (archive + rawLog + noteLogs) via LLM."""
+    entries = parse_all_entries()
     if not entries:
         return "No entries to search."
     formatted = _format_entries(entries)

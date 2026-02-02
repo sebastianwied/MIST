@@ -7,7 +7,7 @@ DB_PATH = Path("data/mist.db")
 
 _SCHEMA = """\
 CREATE TABLE IF NOT EXISTS tasks (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    id         INTEGER PRIMARY KEY,
     title      TEXT NOT NULL,
     status     TEXT NOT NULL DEFAULT 'todo',
     due_date   TEXT,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 );
 
 CREATE TABLE IF NOT EXISTS events (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    id         INTEGER PRIMARY KEY,
     title      TEXT NOT NULL,
     start_time TEXT NOT NULL,
     end_time   TEXT,
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS events (
 );
 
 CREATE TABLE IF NOT EXISTS recurrence_rules (
-    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    id        INTEGER PRIMARY KEY,
     event_id  INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     frequency TEXT NOT NULL,
     interval  INTEGER NOT NULL DEFAULT 1,

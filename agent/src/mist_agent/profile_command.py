@@ -9,17 +9,22 @@ from .profile import (
     set_last_profile_update_time,
 )
 from .prompts import PROFILE_EXTRACTION_PROMPT
-from .storage import parse_rawlog
+from .storage import RawLogEntry, parse_rawlog
 from .types import Writer
 
 
-def handle_profile(output: Writer = print) -> None:
-    """Extract user facts from new rawLog entries and update user.md."""
-    entries = parse_rawlog()
-    high_water = get_last_profile_update_time()
+def handle_profile(output: Writer = print, entries: list[RawLogEntry] | None = None) -> None:
+    """Extract user facts from entries and update user.md.
 
-    if high_water:
-        entries = [e for e in entries if e.time > high_water]
+    If *entries* is None, reads from rawLog and filters by high-water mark.
+    """
+    if entries is None:
+        entries = parse_rawlog()
+        high_water = get_last_profile_update_time()
+        if high_water:
+            entries = [e for e in entries if e.time > high_water]
+    else:
+        high_water = None
 
     current_profile = load_user_profile()
 

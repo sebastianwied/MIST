@@ -41,6 +41,19 @@ Screen {
     width: 1fr;
 }
 
+#file-editor {
+    width: 1fr;
+    height: 1fr;
+    display: none;
+}
+
+#activity {
+    width: 1fr;
+    height: auto;
+    color: $text-muted;
+    padding: 0 1;
+}
+
 #command-input {
     dock: bottom;
     width: 1fr;

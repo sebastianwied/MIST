@@ -8,8 +8,8 @@ from .notes import handle_note, handle_notes, handle_recall
 from .persona_command import handle_persona
 from .respond import handle_text
 from .settings import get_setting, load_settings, set_setting
-from .summarize import handle_summarize
-from .synthesis import handle_resynth, handle_sync
+from .aggregate import handle_aggregate, handle_reset_topics, handle_topic_about, handle_topic_add
+from .synthesis import handle_resynth, handle_sync, handle_synthesis
 from .task_command import (
     handle_task_add,
     handle_task_delete,
@@ -68,11 +68,16 @@ Commands:
                                Create an event
   event list [days] / events   List upcoming events
   event delete <id>            Delete event
+  aggregate                    Classify new notes into topics
+  topic add <name>             Manually create a topic
+  topic about <id|slug> [text] View or set a topic's description
+  reset topics                 Undo aggregation, restore entries to rawLog
   sync                         Update synthesis with new themes
   resynth                      Full synthesis rewrite (deep model)
-  summarize                    Summarize new entries to journal
+  synthesis <id|slug>          Resynthesize a single topic (deep model)
   persona                      Edit agent personality
   view <name>                  View a file or data
+  edit <name>                  Edit a file in the TUI panel
   settings                     Show settings
   set <key> <value>            Change a setting
   status                       System status
@@ -161,8 +166,34 @@ def dispatch(
     if stripped == "resynth":
         handle_resynth(output=output)
         return None
-    if stripped == "summarize":
-        handle_summarize(output=output)
+    if cmd == "topic" and arg:
+        sub, _, sub_arg = arg.partition(" ")
+        sub = sub.lower()
+        if sub == "add" and sub_arg.strip():
+            handle_topic_add(sub_arg.strip(), output=output)
+        elif sub == "about" and sub_arg.strip():
+            # Split: first token is identifier, rest is text (may be empty)
+            parts = sub_arg.strip().split(None, 1)
+            identifier = parts[0]
+            text = parts[1] if len(parts) > 1 else ""
+            handle_topic_about(identifier, text, output=output)
+        else:
+            output("Usage: topic add <name> | topic about <id|slug> [text]")
+        return None
+    if stripped == "reset topics":
+        handle_reset_topics(output=output)
+        return None
+    if stripped == "aggregate":
+        def _confirm_topic(name: str) -> str:
+            try:
+                ans = input_fn(f"  Create topic '{name}'? (yes / no / type new name) ")
+                return ans.strip() or "yes"
+            except (EOFError, KeyboardInterrupt):
+                return "yes"
+        handle_aggregate(output=output, confirm_fn=_confirm_topic)
+        return None
+    if cmd == "synthesis" and arg:
+        handle_synthesis(arg, output=output)
         return None
     if stripped == "status":
         handle_status(output=output)

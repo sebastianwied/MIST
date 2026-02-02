@@ -10,6 +10,16 @@ def _now() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
+def _next_event_id(conn) -> int:
+    """Return the lowest positive integer not used by any event."""
+    rows = conn.execute("SELECT id FROM events ORDER BY id").fetchall()
+    used = {r[0] for r in rows}
+    n = 1
+    while n in used:
+        n += 1
+    return n
+
+
 def create_event(
     title: str,
     start_time: str,
@@ -25,12 +35,12 @@ def create_event(
     now = _now()
     conn = get_connection()
     try:
-        cur = conn.execute(
-            "INSERT INTO events (title, start_time, end_time, location, notes, "
-            "created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (title, start_time, end_time, location, notes, now, now),
+        event_id = _next_event_id(conn)
+        conn.execute(
+            "INSERT INTO events (id, title, start_time, end_time, location, notes, "
+            "created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (event_id, title, start_time, end_time, location, notes, now, now),
         )
-        event_id = cur.lastrowid
         if frequency:
             conn.execute(
                 "INSERT INTO recurrence_rules (event_id, frequency, interval, end_date) "

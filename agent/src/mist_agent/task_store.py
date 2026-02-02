@@ -9,19 +9,34 @@ def _now() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
+def _next_task_id(conn) -> int:
+    """Return the lowest positive integer not used by an active (todo) task."""
+    rows = conn.execute(
+        "SELECT id FROM tasks WHERE status = 'todo' ORDER BY id"
+    ).fetchall()
+    used = {r[0] for r in rows}
+    n = 1
+    while n in used:
+        n += 1
+    return n
+
+
 def create_task(title: str, due_date: str | None = None) -> int:
     """Insert a new task and return its id."""
     init_db()
     now = _now()
     conn = get_connection()
     try:
-        cur = conn.execute(
-            "INSERT INTO tasks (title, status, due_date, created_at, updated_at) "
-            "VALUES (?, 'todo', ?, ?, ?)",
-            (title, due_date, now, now),
+        task_id = _next_task_id(conn)
+        # Remove any old completed/cancelled row occupying this id.
+        conn.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+        conn.execute(
+            "INSERT INTO tasks (id, title, status, due_date, created_at, updated_at) "
+            "VALUES (?, ?, 'todo', ?, ?, ?)",
+            (task_id, title, due_date, now, now),
         )
         conn.commit()
-        return cur.lastrowid
+        return task_id
     finally:
         conn.close()
 

@@ -1,9 +1,8 @@
 """Handler for the 'view' command — display config and data files."""
 
-import re
 from pathlib import Path
 
-from .storage import CONTEXT_PATH, load_topic_files
+from .storage import CONTEXT_PATH, RAWLOG_PATH, load_topic_about, load_topic_files, load_topic_index
 from .task_command import handle_task_list
 from .event_command import handle_event_list
 from .types import Writer
@@ -12,31 +11,26 @@ VIEWABLE_FILES: dict[str, Path] = {
     "persona": Path("data/config/persona.md"),
     "user": Path("data/config/user.md"),
     "model": Path("data/config/model.conf"),
-    "rawlog": Path("data/notes/rawLog.md"),
-    "journal": Path("data/agentJournal.md"),
+    "rawlog": RAWLOG_PATH,
     "context": CONTEXT_PATH,
 }
 
 # Keys that are handled specially (not simple file reads).
-_VIRTUAL_KEYS = {"synthesis", "tasks", "events"}
+_VIRTUAL_KEYS = {"synthesis", "tasks", "events", "topics"}
+
+# All file-backed keys (excludes virtual keys) — safe to open in an editor.
+EDITABLE_FILES: set[str] = set(VIEWABLE_FILES)
 
 # Files whose entries should be shown most-recent-first.
-_REVERSE_CHRONOLOGICAL = {"rawlog", "journal"}
-
-_RAWLOG_SPLIT = re.compile(r"(?=\n---\s*\ntime:)")
-_JOURNAL_SPLIT = re.compile(r"(?=\n## )")
+_REVERSE_CHRONOLOGICAL = {"rawlog"}
 
 
 def _reverse_content(key: str, content: str) -> str:
-    """Reverse chronological entries for rawlog and journal files."""
+    """Reverse chronological entries for rawlog (JSONL: reverse lines)."""
     if key == "rawlog":
-        parts = _RAWLOG_SPLIT.split(content)
-    elif key == "journal":
-        parts = _JOURNAL_SPLIT.split(content)
-    else:
-        return content
-    parts = [p.strip() for p in parts if p.strip()]
-    return "\n\n".join(reversed(parts))
+        lines = [l for l in content.splitlines() if l.strip()]
+        return "\n".join(reversed(lines))
+    return content
 
 
 def _all_viewable_keys() -> list[str]:
@@ -52,13 +46,28 @@ def handle_view(name: str | None, output: Writer = print) -> None:
 
     key = name.lower()
 
-    # Virtual key: synthesis — concatenate all topic files
+    # Virtual key: synthesis — concatenate all topic synthesis files
     if key == "synthesis":
         topics = load_topic_files()
         if not topics:
-            output("No synthesis topics yet. Run 'sync' first.")
+            output("No synthesis topics yet. Run 'aggregate' then 'sync' first.")
             return
-        output("\n\n".join(topics.values()))
+        output("\n\n".join(
+            f"## {slug}\n{content}" for slug, content in topics.items()
+        ))
+        return
+
+    # Virtual key: topics — list topic index with descriptions
+    if key == "topics":
+        index = load_topic_index()
+        if not index:
+            output("No topics yet. Run 'aggregate' first.")
+            return
+        output("Topics:")
+        for t in index:
+            about = load_topic_about(t.slug)
+            desc = f" — {about}" if about else ""
+            output(f"  [{t.id}] {t.slug}: {t.name}{desc}")
         return
 
     # Virtual key: tasks
