@@ -4,29 +4,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MIST is a local-first reflective AI companion system with three interfaces: a macOS desktop app (SwiftUI), a Textual TUI, and a plain CLI REPL (Python). All connect to a local Ollama instance — no cloud dependencies.
+MIST is a local-first reflective AI companion. A central broker manages agent lifecycle and message routing. A Textual TUI provides the interface. All components talk to a local Ollama instance — no cloud dependencies.
 
 ## Architecture
 
 ```
-Desktop App (SwiftUI)       TUI (Textual)         CLI REPL
-       │                        │                     │
-  HTTP POST              Direct ollama lib      Direct ollama lib
-  127.0.0.1:8765                │                     │
-       │                        └──── mist_agent ─────┘
-       ▼                              │
-FastAPI Server (server/app.py)        ├── data/notes/rawLog.jsonl
-       │                              ├── data/topics/<slug>/noteLog.jsonl
-  ollama.chat()                       ├── data/mist.db (SQLite)
-       │                              └── data/synthesis/context.md
-       ▼
+TUI (mist-tui)                Desktop App (SwiftUI)
+  │                              │
+  │ Unix socket                  │ HTTP POST 127.0.0.1:8765
+  ▼                              ▼
+Broker (mist-broker)           FastAPI Server (server/app.py)
+  │                              │
+  ▼                              ▼
+Agent (mist-agent)             Ollama
+  │
+  ▼
 Ollama (local)
 ```
 
-- **Desktop app** → sends messages via `AgentAPI.callAgent()` to the FastAPI server, which proxies to Ollama
-- **TUI** → `mist` — Textual-based interface with panels for chat, topics, tasks, and events
-- **CLI REPL** → `mist-repl` — plain terminal loop, same command set as TUI
-- **agent/** module → the main Python package (`mist_agent`) containing all agent logic
+Four packages in one repo:
+
+| Package | Path | Description |
+|---------|------|-------------|
+| `mist-core` | `core/` | Shared: storage, DB, settings, types, protocol, transport |
+| `mist-broker` | `broker/` | Agent registry, message routing, Unix socket transport |
+| `mist-tui` | `tui/` | Textual shell: layout, widget loading, editor screens, keybindings |
+| `mist-agent` | `agent/` | MIST agent: persona, topics, notes, synthesis, aggregation, widgets |
+
+Communication: TUI widgets each hold a `BrokerClient` (async Unix socket). The broker routes messages between TUI widgets and agents. Agents do not import TUI code and vice versa — all interaction is via the protocol.
 
 ## Prerequisites
 
@@ -37,80 +42,137 @@ Ollama (local)
 ## Running the System
 
 ```bash
-# Create and activate Python venv
 python3 -m venv env
 source env/bin/activate
 
-# Install packages (editable)
-pip install -e ./agent
-pip install -e ./server
+# Install all packages (editable)
+pip install -e ./core -e ./broker -e ./agent -e ./tui
 
-# Run the TUI (recommended)
-mist
+# Run in three terminals:
+mist-broker          # 1. Start the broker
+mist-agent           # 2. Start the agent
+mist-tui             # 3. Start the TUI
 
-# Or run the plain REPL
+# Legacy: plain REPL (no broker needed)
 mist-repl
 
-# Start the FastAPI server (required for desktop app)
+# Legacy: FastAPI server for desktop app
 uvicorn server.app:app --host 127.0.0.1 --port 8765
-
-# Build desktop app
-cd desktop/MistAvatar && xcodebuild -scheme MistAvatar build
 ```
 
-Python dependencies: `ollama`, `textual`, `fastapi`, `uvicorn`
+## Running Tests
+
+```bash
+pytest tui/tests/ -v --ignore=tui/tests/test_integration.py
+pytest broker/tests/ -v
+pytest core/tests/ -v
+pytest agent/tests/ -v
+```
 
 ## Key Components
 
-| Component | Path | Tech |
-|-----------|------|------|
-| FastAPI server | `server/app.py` | FastAPI + Pydantic, single `POST /message` endpoint |
-| TUI | `agent/src/mist_agent/tui.py` | Textual app with chat, topic, task, and event panels |
-| CLI REPL | `agent/src/mist_agent/main.py` | Plain terminal REPL with spinner support |
-| Commands | `agent/src/mist_agent/commands.py` | Central command dispatcher |
-| Aggregation | `agent/src/mist_agent/aggregate.py` | LLM-based topic classification and routing |
-| Synthesis | `agent/src/mist_agent/synthesis.py` | Per-topic and global synthesis generation |
-| Storage | `agent/src/mist_agent/storage.py` | JSONL persistence, topic index, file paths |
-| Task store | `agent/src/mist_agent/task_store.py` | SQLite-backed task CRUD |
-| Event store | `agent/src/mist_agent/event_store.py` | SQLite-backed event CRUD with recurrence |
-| Database | `agent/src/mist_agent/db.py` | SQLite connection and schema |
-| Ollama client | `agent/src/mist_agent/ollama_client.py` | Ollama API wrapper with per-command model resolution |
-| Prompts | `agent/src/mist_agent/prompts.py` | All LLM prompt templates |
-| Desktop app | `desktop/MistAvatar/MistAvatar/` | SwiftUI macOS app |
-| Data store | `data/` | JSONL logs, SQLite database, markdown synthesis files |
-| Config | `data/config/` | `persona.md`, `model.conf`, `deep_model.conf`, `avatar.png` |
+### mist-core (`core/src/mist_core/`)
 
-## Desktop App Structure
+| File | Purpose |
+|------|---------|
+| `storage.py` | JSONL persistence, topic index, note file helpers, path constants |
+| `settings.py` | Settings load/save, model resolution chain |
+| `protocol.py` | Message envelope, message types |
+| `transport.py` | Async Unix socket client/server |
+| `db.py` | SQLite connection and schema |
+| `task_store.py` | SQLite-backed task CRUD |
+| `event_store.py` | SQLite-backed event CRUD with recurrence |
+| `ollama_client.py` | Ollama API wrapper with per-command model resolution |
+| `types.py` | Shared type aliases (Writer, etc.) |
 
-The macOS app runs as a menu-bar-style accessory (no dock icon). `AppDelegate` creates two `NSPanel` windows:
-- **Avatar panel** (56x56): always-visible floating avatar, top-right corner. Displays `data/config/avatar.png` if present, otherwise a diamond icon.
-- **Chat panel** (360x420): toggles on avatar click, positioned left of avatar
+### mist-broker (`broker/src/mist_broker/`)
 
-`AgentAPI.swift` handles HTTP communication with the FastAPI server. `ChatView.swift` manages the message list and input field via a `ChatModel` ObservableObject.
+| File | Purpose |
+|------|---------|
+| `broker.py` | Main broker loop: accept connections, route messages |
+| `registry.py` | Agent registration and lookup |
+| `router.py` | Message dispatch between TUI clients and agents |
+| `services.py` | Shared service handlers (tasks, events, storage) |
+| `llm_service.py` | LLM request queuing to Ollama |
+
+### mist-tui (`tui/src/mist_tui/`)
+
+| File | Purpose |
+|------|---------|
+| `app.py` | `MistApp`: connects to broker, discovers agents, mounts widgets |
+| `broker_client.py` | Async socket client for widget-to-broker communication |
+| `widget_base.py` | `BrokerWidget` base class with `request_editor()` helper |
+| `widget_loader.py` | Dynamic import of agent-declared widgets from manifests |
+| `messages.py` | `EditorResult`, `RequestFullScreenEditor` message classes |
+| `screens/editor_screen.py` | Full-screen editor with preview, F3 mode switch |
+| `widgets/editor.py` | `SidePanelEditor` inline editor with F3 mode switch |
+| `widgets/chat.py` | Built-in fallback chat panel |
+| `widgets/notes.py` | Notes browser panel |
+| `keybindings.py` | Global keybinding management |
+
+### mist-agent (`agent/src/mist_agent/`)
+
+| File | Purpose |
+|------|---------|
+| `agent.py` | Broker-connected agent: registers, handles commands and sub-commands |
+| `manifest.py` | Agent metadata: name, capabilities, widget declarations |
+| `commands.py` | Central command dispatcher |
+| `notes.py` | Note/recall/note-new/note-list handlers |
+| `aggregate.py` | LLM-based topic classification and routing |
+| `synthesis.py` | Per-topic and global synthesis generation |
+| `view_command.py` | `view`, `edit`, `save_edit` handlers |
+| `respond.py` | Free-text LLM response handler |
+| `prompts.py` | All LLM prompt templates |
+| `persona_command.py` | Interactive persona editing via LLM |
+| `extraction.py` | Task/event extraction from free text |
+| `widgets/chat.py` | `MistChatPanel`: chat with persona editing, aggregate flow, editor integration |
+| `widgets/topics.py` | `MistTopicsPanel`: topic browser |
+
+## Editor System
+
+Two editor modes, toggled with **F3**. The last-used mode persists within a session.
+
+- **Full-screen** (`EditorScreen`): replaces the view, has live markdown preview (Ctrl+P)
+- **Side-panel** (`SidePanelEditor`): inline beside the chat log
+
+`view` opens read-only. `edit` opens read-write. `note new` creates a file and opens read-write.
+
+Save flow (read-write): Ctrl+S → TUI sends content back to agent via broker sub-command (`edit:save` or `note:save`) → agent writes to disk.
+
+## TUI Widget Loading
+
+Agents declare widgets in their manifest. The TUI dynamically imports and mounts them:
+
+1. TUI connects to broker, requests agent catalog
+2. For each agent, parses widget specs from manifest
+3. Imports widget classes, creates `BrokerClient` per widget
+4. Mounts widgets as tabs in `TabbedContent`
+5. Falls back to built-in `ChatPanel` if no widgets declared
+
+## Data Flow
+
+- **Input logging**: all input logged to `data/notes/rawLog.jsonl` as JSONL (`{time, source, text}`)
+- **Aggregation**: `aggregate` classifies rawLog entries into topics via LLM, routes to `data/topics/<slug>/noteLog.jsonl`, archives to `data/notes/archive.jsonl`
+- **Notes**: `note new [topic] <title>` creates `.md` files in `data/topics/<slug>/notes/` or `data/notes/drafts/`
+- **Synthesis**: `sync` generates per-topic synthesis; `resynth` does full rewrite. Global context at `data/synthesis/context.md`
+- **Tasks/Events**: stored in `data/mist.db` (SQLite)
 
 ## Configuration
 
 Config files in `data/config/` are gitignored and auto-created from defaults on first run.
 
-- `persona.md` — agent personality (editable via `persona` REPL command or by hand)
-- `settings.json` — all settings including model selection (`set model <name>`, `set model_resynth <name>`, etc.)
-- `model.conf` — legacy model name file (migrated to settings.json on startup; use `set model` instead)
-- `deep_model.conf` — legacy deep model file (migrated to `model_resynth`/`model_synthesis` on startup)
-- `avatar.png` — optional custom avatar image for the desktop app
+- `persona.md` — agent personality
+- `settings.json` — all settings including model selection
+- `avatar.png` — optional desktop app avatar
 
-Model resolution chain: `settings.model_<command>` → `settings.model` → `model.conf` → built-in default (`gemma3:1b`).
-Settings are read from disk on every call, so edits take effect immediately.
+Model resolution: `settings.model_<command>` → `settings.model` → built-in default (`gemma3:1b`).
 
-## Data Flow
+## Broker Protocol
 
-- **Input logging**: all input logged to `data/notes/rawLog.jsonl` as JSONL (`{time, source, text}`)
-- **Aggregation**: `aggregate` command classifies rawLog entries into topics via LLM, routes them to `data/topics/<slug>/noteLog.jsonl`, and archives handled entries to `data/notes/archive.jsonl`
-- **Synthesis**: `sync` generates per-topic synthesis from new entries; `resynth` does a full rewrite using the deep model. Global context written to `data/synthesis/context.md`
-- **Tasks/Events**: stored in `data/mist.db` (SQLite). Free-text input can auto-detect tasks/events when `agency_mode` is `suggest` or `auto`
-- **server/app.py**: stateless proxy — receives `{text: str}`, returns `{reply: str}` from Ollama. Uses the same `handle_text()` path as the REPL, so persona and model config apply.
+Messages are JSON objects, newline-delimited, over Unix domain sockets. See `ARCHITECTURE.md` for the full protocol spec including message types, shared service requests, and agent manifest format.
 
-## API
-
-`POST http://127.0.0.1:8765/message`
-- Request: `{"text": "user message"}`
-- Response: `{"reply": "agent response"}`
+Sub-commands (colon-prefixed) are used for multi-step TUI flows that bypass normal dispatch:
+- `persona:get`, `persona:draft`, `persona:save`
+- `aggregate:classify`, `aggregate:route`
+- `edit:save <name> <content>`
+- `note:save <slug> <filename> <content>`
