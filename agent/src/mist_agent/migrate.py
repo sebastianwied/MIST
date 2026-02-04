@@ -4,7 +4,7 @@ import re
 import shutil
 from pathlib import Path
 
-from .storage import (
+from mist_core.storage import (
     ARCHIVE_PATH,
     LAST_AGGREGATE_PATH,
     RAWLOG_PATH,
@@ -144,8 +144,7 @@ def migrate_model_conf() -> None:
     - If model.conf exists and settings.model is empty → copy value to settings.
     - If deep_model.conf exists and model_resynth/model_synthesis are empty → copy.
     """
-    from .ollama_client import MODEL_PATH
-    from .settings import get_setting, set_setting
+    from mist_core.settings import MODEL_PATH, get_setting, set_setting
 
     # model.conf → settings.model
     try:

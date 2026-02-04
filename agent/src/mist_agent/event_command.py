@@ -3,8 +3,8 @@
 import re
 from datetime import datetime
 
-from .event_store import create_event, delete_event, get_upcoming_events
-from .types import Writer
+from mist_core.event_store import create_event, delete_event, get_upcoming_events
+from mist_core.types import Writer
 
 # event add <title> <date> <time>[-<end_time>] [weekly|daily|monthly|yearly] [until:YYYY-MM-DD]
 _UNTIL_RE = re.compile(r"\s+until:(\S+)")

@@ -2,13 +2,15 @@
 
 from typing import Callable
 
+from mist_core.settings import get_model, get_setting, is_valid_setting_key, load_settings, MODEL_COMMANDS, set_setting
+from mist_core.types import Writer
+
+from .aggregate import handle_aggregate, handle_reset_topics, handle_topic_about, handle_topic_add
 from .event_command import handle_event_add, handle_event_delete, handle_event_list
 from .extraction import apply_extracted_items, extract_items
-from .notes import handle_note, handle_notes, handle_recall
+from .notes import handle_note, handle_note_list, handle_note_new, handle_notes, handle_recall
 from .persona_command import handle_persona
 from .respond import handle_text
-from .settings import get_model, get_setting, is_valid_setting_key, load_settings, MODEL_COMMANDS, set_setting
-from .aggregate import handle_aggregate, handle_reset_topics, handle_topic_about, handle_topic_add
 from .synthesis import handle_resynth, handle_sync, handle_synthesis
 from .task_command import (
     handle_task_add,
@@ -16,9 +18,8 @@ from .task_command import (
     handle_task_done,
     handle_task_list,
 )
-from .types import Writer
 from .util import handle_status, stop_model
-from .view_command import handle_view
+from .view_command import handle_edit, handle_view
 
 
 def _dispatch_task(sub: str, arg: str, output: Writer) -> None:
@@ -75,6 +76,8 @@ def _handle_settings(output: Writer) -> None:
 _HELP_TEXT = """\
 Commands:
   note <text>                  Save a note (no LLM call)
+  note new [topic] <title>     Create a note (in topic or as draft)
+  note list <topic|drafts>     List notes in a topic or drafts
   notes                        List recent notes
   recall <topic>               Search past input via LLM
   task add <title> [due:DATE]  Create a task
@@ -143,12 +146,25 @@ def dispatch(
 
     # --- prefix commands (require an argument) ---
     if cmd == "note" and arg:
+        sub, _, sub_arg = arg.partition(" ")
+        sub_lower = sub.lower()
+        if sub_lower == "new" and sub_arg.strip():
+            # note new <topic> <title>
+            topic_id, _, title = sub_arg.strip().partition(" ")
+            handle_note_new(topic_id, title.strip(), output=output)
+            return None
+        if sub_lower == "list" and sub_arg.strip():
+            handle_note_list(sub_arg.strip(), output=output)
+            return None
         handle_note(arg, output=output)
         return None
     if cmd == "recall" and arg:
         return handle_recall(arg)
     if cmd == "view":
         handle_view(arg or None, output=output)
+        return None
+    if cmd == "edit":
+        handle_edit(arg or None, output=output)
         return None
 
     # --- task / event sub-command routing ---

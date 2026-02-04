@@ -2,7 +2,7 @@
 
 import subprocess
 
-from .types import Writer
+from mist_core.types import Writer
 
 
 def handle_status(output: Writer = print) -> None:

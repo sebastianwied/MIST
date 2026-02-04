@@ -2,11 +2,12 @@
 
 from pathlib import Path
 
-from .settings import get_model, MODEL_COMMANDS
-from .storage import CONTEXT_PATH, RAWLOG_PATH, load_topic_about, load_topic_files, load_topic_index
+from mist_core.settings import get_model, MODEL_COMMANDS
+from mist_core.storage import CONTEXT_PATH, RAWLOG_PATH, load_topic_about, load_topic_files, load_topic_index
+from mist_core.types import Writer
+
 from .task_command import handle_task_list
 from .event_command import handle_event_list
-from .types import Writer
 
 VIEWABLE_FILES: dict[str, Path] = {
     "persona": Path("data/config/persona.md"),
@@ -40,8 +41,7 @@ def _all_viewable_keys() -> list[str]:
 
 def _show_model(output: Writer) -> None:
     """Display the default model, its source, and per-command overrides."""
-    from .ollama_client import _load_model_conf
-    from .settings import load_settings
+    from mist_core.settings import _load_model_conf, load_settings
 
     settings = load_settings()
     default = get_model()
@@ -67,6 +67,38 @@ def _show_model(output: Writer) -> None:
             output(f"  {cmd:12s}  {override}")
         else:
             output(f"  {cmd:12s}  ({resolved})")
+
+
+def handle_edit(name: str | None, output: Writer = print) -> None:
+    """Return editable file content. With no argument, list editable names."""
+    if name is None:
+        output("Editable files: " + ", ".join(sorted(EDITABLE_FILES)))
+        return
+
+    key = name.lower()
+    if key not in EDITABLE_FILES:
+        output(f"Cannot edit '{name}'. Editable: {', '.join(sorted(EDITABLE_FILES))}")
+        return
+
+    path = VIEWABLE_FILES[key]
+    try:
+        content = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        content = ""
+
+    output(content)
+
+
+def save_edit(name: str, content: str) -> str:
+    """Write content back to an editable file. Returns a status message."""
+    key = name.lower()
+    if key not in EDITABLE_FILES:
+        return f"Cannot save '{name}'. Editable: {', '.join(sorted(EDITABLE_FILES))}"
+
+    path = VIEWABLE_FILES[key]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+    return f"Saved {key}."
 
 
 def handle_view(name: str | None, output: Writer = print) -> None:

@@ -4,11 +4,8 @@ import json
 import re
 from typing import Callable
 
-from .notes import _format_entries
-from .ollama_client import call_ollama
-from .profile_command import handle_profile
-from .prompts import AGGREGATE_ASSIGNMENT_PROMPT
-from .storage import (
+from mist_core.ollama_client import call_ollama
+from mist_core.storage import (
     RawLogEntry,
     TopicInfo,
     add_topic,
@@ -23,8 +20,12 @@ from .storage import (
     set_last_aggregate_time,
     write_rawlog,
 )
+from mist_core.types import Writer
+
+from .notes import _format_entries
+from .profile_command import handle_profile
+from .prompts import AGGREGATE_ASSIGNMENT_PROMPT
 from .synthesis import _slugify
-from .types import Writer
 
 
 def _build_existing_topics_text(index: list[TopicInfo]) -> str:

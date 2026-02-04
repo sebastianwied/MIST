@@ -2,11 +2,9 @@
 
 import re
 
-from .notes import _format_entries
-from .ollama_client import call_ollama
-from .prompts import CONTEXT_GEN_PROMPT, TOPIC_RESYNTH_PROMPT, TOPIC_SYNC_PROMPT
-from .settings import get_model
-from .storage import (
+from mist_core.ollama_client import call_ollama
+from mist_core.settings import get_model
+from mist_core.storage import (
     find_topic,
     get_last_sync_time,
     load_topic_files,
@@ -17,7 +15,10 @@ from .storage import (
     save_topic_synthesis,
     set_last_sync_time,
 )
-from .types import Writer
+from mist_core.types import Writer
+
+from .notes import _format_entries
+from .prompts import CONTEXT_GEN_PROMPT, TOPIC_RESYNTH_PROMPT, TOPIC_SYNC_PROMPT
 
 
 def _slugify(heading: str) -> str:

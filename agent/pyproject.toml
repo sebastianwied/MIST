@@ -3,8 +3,15 @@ name = "mist-agent"
 version = "0.1.0"
 description = "Local-first reflective AI companion REPL"
 requires-python = ">=3.13"
-dependencies = ["ollama", "textual>=0.89"]
+dependencies = ["mist-core", "mist-tui", "ollama", "textual>=0.89"]
 
 [project.scripts]
 mist-repl = "mist_agent.main:repl"
 mist = "mist_agent.main:tui"
+mist-agent = "mist_agent.agent:main"
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

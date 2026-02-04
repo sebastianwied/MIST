@@ -343,3 +343,83 @@ def save_context(text: str) -> None:
     """Write the condensed context summary."""
     SYNTHESIS_DIR.mkdir(parents=True, exist_ok=True)
     CONTEXT_PATH.write_text(text.strip() + "\n", encoding="utf-8")
+
+
+# --- Per-topic long-form notes ---
+
+DRAFTS_DIR = Path("data/notes/drafts")
+
+
+def _slugify_title(title: str) -> str:
+    """Turn a note title into a filename-safe slug."""
+    import re
+    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+    return slug or "untitled"
+
+
+def create_draft_note(title: str) -> tuple[str, Path]:
+    """Create an empty .md note in the drafts dir. Returns (filename, path)."""
+    DRAFTS_DIR.mkdir(parents=True, exist_ok=True)
+    date = datetime.now().strftime("%Y-%m-%d")
+    filename = f"{date}-{_slugify_title(title)}.md"
+    path = DRAFTS_DIR / filename
+    if not path.exists():
+        path.write_text(f"# {title}\n\n", encoding="utf-8")
+    return filename, path
+
+
+def list_draft_notes() -> list[str]:
+    """List .md filenames in the drafts dir."""
+    if not DRAFTS_DIR.is_dir():
+        return []
+    return sorted(p.name for p in DRAFTS_DIR.glob("*.md"))
+
+
+def load_draft_note(filename: str) -> str:
+    """Read a draft note, returning '' if missing."""
+    try:
+        return (DRAFTS_DIR / filename).read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return ""
+
+
+def save_draft_note(filename: str, content: str) -> None:
+    """Write a draft note."""
+    DRAFTS_DIR.mkdir(parents=True, exist_ok=True)
+    (DRAFTS_DIR / filename).write_text(content, encoding="utf-8")
+
+
+def create_topic_note(slug: str, title: str) -> tuple[str, Path]:
+    """Create an empty .md note in a topic's notes/ dir. Returns (filename, path)."""
+    notes_dir = TOPICS_DIR / slug / "notes"
+    notes_dir.mkdir(parents=True, exist_ok=True)
+    date = datetime.now().strftime("%Y-%m-%d")
+    filename = f"{date}-{_slugify_title(title)}.md"
+    path = notes_dir / filename
+    if not path.exists():
+        path.write_text(f"# {title}\n\n", encoding="utf-8")
+    return filename, path
+
+
+def list_topic_notes(slug: str) -> list[str]:
+    """List .md filenames in a topic's notes/ dir."""
+    notes_dir = TOPICS_DIR / slug / "notes"
+    if not notes_dir.is_dir():
+        return []
+    return sorted(p.name for p in notes_dir.glob("*.md"))
+
+
+def load_topic_note(slug: str, filename: str) -> str:
+    """Read a topic note, returning '' if missing."""
+    path = TOPICS_DIR / slug / "notes" / filename
+    try:
+        return path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return ""
+
+
+def save_topic_note(slug: str, filename: str, content: str) -> None:
+    """Write a topic note."""
+    notes_dir = TOPICS_DIR / slug / "notes"
+    notes_dir.mkdir(parents=True, exist_ok=True)
+    (notes_dir / filename).write_text(content, encoding="utf-8")

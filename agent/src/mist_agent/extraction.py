@@ -4,11 +4,12 @@ import json
 import re
 from typing import Any, Callable
 
-from .event_store import create_event
-from .ollama_client import call_ollama
+from mist_core.event_store import create_event
+from mist_core.ollama_client import call_ollama
+from mist_core.task_store import create_task
+from mist_core.types import Writer
+
 from .prompts import EXTRACTION_PROMPT
-from .task_store import create_task
-from .types import Writer
 
 
 def _strip_code_fences(text: str) -> str:

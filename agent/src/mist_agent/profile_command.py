@@ -1,7 +1,10 @@
 """Handler for the 'profile' command."""
 
+from mist_core.ollama_client import call_ollama
+from mist_core.storage import RawLogEntry, parse_rawlog
+from mist_core.types import Writer
+
 from .notes import _format_entries
-from .ollama_client import call_ollama
 from .profile import (
     get_last_profile_update_time,
     load_user_profile,
@@ -9,8 +12,6 @@ from .profile import (
     set_last_profile_update_time,
 )
 from .prompts import PROFILE_EXTRACTION_PROMPT
-from .storage import RawLogEntry, parse_rawlog
-from .types import Writer
 
 
 def handle_profile(output: Writer = print, entries: list[RawLogEntry] | None = None) -> None:

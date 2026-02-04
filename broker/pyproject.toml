@@ -1,0 +1,15 @@
+[project]
+name = "mist-broker"
+version = "0.1.0"
+description = "MIST message broker: agent lifecycle, routing, shared services"
+requires-python = ">=3.13"
+dependencies = ["mist-core"]
+
+[project.scripts]
+mist-broker = "mist_broker.main:main"
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

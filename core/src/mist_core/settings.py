@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Any
 
 SETTINGS_PATH = Path("data/config/settings.json")
+MODEL_PATH = Path("data/config/model.conf")
+DEFAULT_MODEL = "gemma3:1b"
 
 # Commands that can have per-command model overrides (model_<command>).
 MODEL_COMMANDS = (
@@ -21,6 +23,14 @@ DEFAULTS: dict[str, Any] = {
 
 # All recognised setting keys (base defaults + per-command model keys).
 _VALID_KEYS = set(DEFAULTS) | {f"model_{cmd}" for cmd in MODEL_COMMANDS}
+
+
+def _load_model_conf() -> str:
+    """Read the model name from model.conf, returning empty string if missing."""
+    try:
+        return MODEL_PATH.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        return ""
 
 
 def load_settings() -> dict[str, Any]:
@@ -65,8 +75,6 @@ def get_model(command: str | None = None) -> str:
 
     settings.model_<command> → settings.model → model.conf → DEFAULT_MODEL
     """
-    from .ollama_client import DEFAULT_MODEL, _load_model_conf
-
     settings = load_settings()
 
     # 1. Per-command override

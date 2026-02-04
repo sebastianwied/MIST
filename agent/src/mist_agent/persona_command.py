@@ -2,10 +2,11 @@
 
 from typing import Callable
 
-from .ollama_client import call_ollama
+from mist_core.ollama_client import call_ollama
+from mist_core.types import Writer
+
 from .persona import load_persona, save_persona
 from .prompts import PERSONA_EDIT_PROMPT
-from .types import Writer
 
 
 def handle_persona(

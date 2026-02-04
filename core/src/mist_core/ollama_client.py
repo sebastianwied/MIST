@@ -1,24 +1,12 @@
 """Thin wrapper around the Ollama Python client."""
 
-from pathlib import Path
-
 from ollama import chat, ChatResponse
 
-MODEL_PATH = Path("data/config/model.conf")
-DEFAULT_MODEL = "gemma3:1b"
-
-
-def _load_model_conf() -> str:
-    """Read the model name from model.conf, returning empty string if missing."""
-    try:
-        return MODEL_PATH.read_text(encoding="utf-8").strip()
-    except FileNotFoundError:
-        return ""
+from .settings import get_model
 
 
 def load_model() -> str:
     """Return the resolved default model name (for display / status)."""
-    from .settings import get_model
     return get_model()
 
 
@@ -36,7 +24,6 @@ def call_ollama(
     If *system* is provided it is prepended as a system message.
     """
     if model is None:
-        from .settings import get_model
         model = get_model(command)
     messages: list[dict[str, str]] = []
     if system:

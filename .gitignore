@@ -6,6 +6,7 @@ __pycache__/
 *.egg-info/
 *.pyc
 *.pyo
+*.sock
 env/
 
 # Xcode user data
