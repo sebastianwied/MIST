@@ -11,7 +11,7 @@ DEFAULT_MODEL = "gemma3:1b"
 # Commands that can have per-command model overrides (model_<command>).
 MODEL_COMMANDS = (
     "reflect", "recall", "sync", "resynth", "synthesis",
-    "aggregate", "extract", "persona", "profile",
+    "aggregate", "extract", "persona", "profile", "review",
 )
 
 DEFAULTS: dict[str, Any] = {

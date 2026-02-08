@@ -423,3 +423,91 @@ def save_topic_note(slug: str, filename: str, content: str) -> None:
     notes_dir = TOPICS_DIR / slug / "notes"
     notes_dir.mkdir(parents=True, exist_ok=True)
     (notes_dir / filename).write_text(content, encoding="utf-8")
+
+
+def file_draft_to_topic(filename: str, slug: str) -> str:
+    """Move a draft note into a topic's notes/ directory.
+
+    Handles filename collisions by prefixing with 'draft--'.
+    Returns the final filename used.
+    """
+    content = (DRAFTS_DIR / filename).read_text(encoding="utf-8")
+    target = TOPICS_DIR / slug / "notes" / filename
+    final_filename = filename
+    if target.exists():
+        final_filename = f"draft--{filename}"
+    save_topic_note(slug, final_filename, content)
+    (DRAFTS_DIR / filename).unlink()
+    return final_filename
+
+
+def merge_topics(source_slug: str, target_slug: str) -> int:
+    """Merge source topic into target: entries, notes, synthesis, about.
+
+    Moves all noteLog entries, .md notes, synthesis, and about content
+    from source into target, removes source from index, and deletes
+    source directory.
+
+    Returns the number of noteLog entries moved.
+    """
+    # 1. Move noteLog entries
+    entries = load_topic_notelog(source_slug)
+    if entries:
+        append_to_topic_notelog(target_slug, entries)
+
+    # 2. Move .md note files
+    source_notes_dir = TOPICS_DIR / source_slug / "notes"
+    if source_notes_dir.is_dir():
+        target_notes_dir = TOPICS_DIR / target_slug / "notes"
+        target_notes_dir.mkdir(parents=True, exist_ok=True)
+        for src_file in sorted(source_notes_dir.glob("*.md")):
+            if src_file.name == "notelog.md":
+                continue  # auto-generated, will be regenerated
+            dest = target_notes_dir / src_file.name
+            if dest.exists():
+                dest = target_notes_dir / f"{source_slug}--{src_file.name}"
+            src_file.rename(dest)
+
+    # 3. Concatenate synthesis
+    source_synth = load_topic_synthesis(source_slug)
+    if source_synth:
+        target_synth = load_topic_synthesis(target_slug)
+        if target_synth:
+            combined = target_synth + "\n\n---\n\n" + source_synth
+        else:
+            combined = source_synth
+        save_topic_synthesis(target_slug, combined)
+
+    # 4. Concatenate about
+    source_about = load_topic_about(source_slug)
+    if source_about:
+        target_about = load_topic_about(target_slug)
+        if target_about:
+            combined = target_about + "\n\n---\n\n" + source_about
+        else:
+            combined = source_about
+        save_topic_about(target_slug, combined)
+
+    # 5. Remove source from index
+    index = load_topic_index()
+    index = [t for t in index if t.slug != source_slug]
+    save_topic_index(index)
+
+    # 6. Delete source directory
+    source_dir = TOPICS_DIR / source_slug
+    if source_dir.exists():
+        shutil.rmtree(source_dir)
+
+    return len(entries)
+
+
+def save_topic_notelog_md(slug: str, entries: list[RawLogEntry]) -> None:
+    """Write all noteLog entries as formatted markdown to notes/notelog.md."""
+    notes_dir = TOPICS_DIR / slug / "notes"
+    notes_dir.mkdir(parents=True, exist_ok=True)
+    lines = ["# NoteLog\n"]
+    for e in entries:
+        lines.append(f"**{e.time}** ({e.source})")
+        lines.append(e.text)
+        lines.append("\n---\n")
+    (notes_dir / "notelog.md").write_text("\n".join(lines), encoding="utf-8")

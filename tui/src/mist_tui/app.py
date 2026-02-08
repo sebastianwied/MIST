@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from pathlib import Path
 
@@ -14,7 +15,9 @@ from mist_core.transport import DEFAULT_SOCKET_PATH
 from .broker_client import BrokerClient
 from .keybindings import GLOBAL_BINDINGS
 from .messages import EditorResult, RequestFullScreenEditor
-from .screens import EditorScreen
+from .process_manager import ProcessManager
+from .screens import EditorScreen, LauncherScreen
+from .screens.launcher import LaunchResult
 from .widget_loader import load_widget_class, parse_widget_specs
 from .widgets.chat import ChatPanel
 
@@ -38,10 +41,13 @@ class MistApp(App):
     def __init__(
         self,
         socket_path: Path | str | None = None,
+        managed: bool = True,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
         self._socket_path = Path(socket_path) if socket_path else DEFAULT_SOCKET_PATH
+        self._managed = managed
+        self._process_manager = ProcessManager(self._socket_path)
         self._catalog_client: BrokerClient | None = None
         self._widget_clients: list[BrokerClient] = []
 
@@ -52,6 +58,18 @@ class MistApp(App):
         yield Footer()
 
     async def on_mount(self) -> None:
+        if self._managed:
+            self.push_screen(
+                LauncherScreen(self._process_manager),
+                self._on_launcher_dismiss,
+            )
+        else:
+            await self._connect_and_mount()
+
+    async def _on_launcher_dismiss(self, result: LaunchResult) -> None:
+        if result.agents_started:
+            # Give agents a moment to register with the broker
+            await asyncio.sleep(1.0)
         await self._connect_and_mount()
 
     async def _connect_and_mount(self) -> None:
@@ -144,9 +162,10 @@ class MistApp(App):
         self.push_screen(screen, _on_dismiss)
 
     async def action_quit(self) -> None:
-        """Close all broker connections and exit."""
+        """Close all broker connections, stop managed processes, and exit."""
         for client in self._widget_clients:
             await client.close()
         if self._catalog_client is not None:
             await self._catalog_client.close()
+        self._process_manager.shutdown()
         self.exit()

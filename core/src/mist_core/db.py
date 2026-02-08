@@ -34,6 +34,26 @@ CREATE TABLE IF NOT EXISTS recurrence_rules (
     end_date  TEXT,
     UNIQUE(event_id)
 );
+
+CREATE TABLE IF NOT EXISTS articles (
+    id          INTEGER PRIMARY KEY,
+    title       TEXT NOT NULL,
+    authors     TEXT NOT NULL,
+    abstract    TEXT,
+    year        INTEGER,
+    source_url  TEXT,
+    arxiv_id    TEXT,
+    s2_id       TEXT,
+    pdf_path    TEXT,
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS article_tags (
+    article_id  INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
+    tag         TEXT NOT NULL,
+    PRIMARY KEY (article_id, tag)
+);
 """
 
 

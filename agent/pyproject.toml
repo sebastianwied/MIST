@@ -10,6 +10,9 @@ mist-repl = "mist_agent.main:repl"
 mist = "mist_agent.main:tui"
 mist-agent = "mist_agent.agent:main"
 
+[project.entry-points."mist.agents"]
+mist = "mist_agent.manifest:AGENT_ENTRY"
+
 [project.optional-dependencies]
 dev = ["pytest", "pytest-asyncio"]
 

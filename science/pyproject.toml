@@ -1,0 +1,18 @@
+[project]
+name = "mist-science"
+version = "0.1.0"
+description = "MIST science assistant: article search, library, and PDF management"
+requires-python = ">=3.13"
+dependencies = ["mist-core", "mist-tui"]
+
+[project.scripts]
+mist-science = "science_agent.agent:main"
+
+[project.entry-points."mist.agents"]
+science = "science_agent.manifest:AGENT_ENTRY"
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

@@ -201,10 +201,10 @@ class MistChatPanel(BrokerWidget):
                 )
             return
 
-        # note new → create file and open in editor
+        # note new / note edit → create or open file in editor
         if cmd == "note":
             parts = text.split(None, 2)
-            if len(parts) >= 2 and parts[1].lower() == "new":
+            if len(parts) >= 2 and parts[1].lower() in ("new", "edit", "promote"):
                 self._set_busy(True)
                 self.run_worker(
                     self._cmd_normal(text), name="note_new", exclusive=True,

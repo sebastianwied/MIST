@@ -75,7 +75,7 @@ MIST is a local-first multi-agent system. A central **broker** manages agent lif
 | `mist-core` | Shared infrastructure: storage, DB, task/event stores, settings, protocol definitions, types |
 | `mist-broker` | Agent lifecycle, message routing, shared service access, LLM service, transport layer |
 | `mist-tui` | Textual shell: layout, widget loading, UI state, keybindings |
-| `mist-agent` | MIST agent: persona, topics, synthesis, aggregation, notes, prompts, widgets |
+| `mist-agent` | MIST agent: persona, topics (add/about/merge), synthesis, aggregation, notes, prompts, widgets |
 
 ## Protocol
 

@@ -24,6 +24,17 @@ from mist_core.event_store import (
     list_events,
     update_event,
 )
+from mist_core.article_store import (
+    add_tag as article_add_tag,
+    create_article,
+    delete_article,
+    get_article,
+    list_articles,
+    list_tags as article_list_tags,
+    remove_tag as article_remove_tag,
+    set_pdf_path as article_set_pdf_path,
+    update_article,
+)
 from mist_core.storage import (
     add_topic,
     append_to_archive,
@@ -32,10 +43,13 @@ from mist_core.storage import (
     find_topic,
     get_last_aggregate_time,
     get_last_sync_time,
+    list_topic_notes,
     load_context,
+    load_draft_note,
     load_topic_about,
     load_topic_files,
     load_topic_index,
+    load_topic_note,
     load_topic_notelog,
     load_topic_synthesis,
     parse_all_entries,
@@ -82,6 +96,8 @@ class ServiceDispatcher:
                     result = await self._handle_tasks(payload)
                 case "events":
                     result = await self._handle_events(payload)
+                case "articles":
+                    result = await self._handle_articles(payload)
                 case "storage":
                     result = await self._handle_storage(payload)
                 case "settings":
@@ -141,6 +157,36 @@ class ServiceDispatcher:
                 return await asyncio.to_thread(get_upcoming_events, **params)
             case _:
                 raise ValueError(f"unknown events action: {action}")
+
+    # ── Articles ─────────────────────────────────────────────────────
+
+    async def _handle_articles(self, payload: dict) -> Any:
+        action = payload.get("action")
+        params = payload.get("params", {})
+        match action:
+            case "list":
+                return await asyncio.to_thread(list_articles, **params)
+            case "create":
+                aid = await asyncio.to_thread(create_article, **params)
+                return {"article_id": aid}
+            case "get":
+                return await asyncio.to_thread(get_article, **params)
+            case "update":
+                return await asyncio.to_thread(update_article, **params)
+            case "delete":
+                return await asyncio.to_thread(delete_article, **params)
+            case "add_tag":
+                await asyncio.to_thread(article_add_tag, **params)
+                return True
+            case "remove_tag":
+                await asyncio.to_thread(article_remove_tag, **params)
+                return True
+            case "list_tags":
+                return await asyncio.to_thread(article_list_tags)
+            case "set_pdf_path":
+                return await asyncio.to_thread(article_set_pdf_path, **params)
+            case _:
+                raise ValueError(f"unknown articles action: {action}")
 
     # ── Storage ──────────────────────────────────────────────────────
 
@@ -208,6 +254,12 @@ class ServiceDispatcher:
             case "save_topic_about":
                 await asyncio.to_thread(save_topic_about, **params)
                 return True
+            case "list_topic_notes":
+                return await asyncio.to_thread(list_topic_notes, **params)
+            case "load_topic_note":
+                return await asyncio.to_thread(load_topic_note, **params)
+            case "load_draft_note":
+                return await asyncio.to_thread(load_draft_note, **params)
             case "load_topic_files":
                 return await asyncio.to_thread(load_topic_files)
             case "get_last_aggregate_time":

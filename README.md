@@ -83,11 +83,14 @@ data/
 | `note <text>` | Save a note silently (no LLM call) |
 | `note new [topic] <title>` | Create a long-form note (in topic or as draft) |
 | `note list <topic\|drafts>` | List note files in a topic or drafts |
+| `note file <filename> <topic>` | File a draft note into a topic |
+| `note promote <topic> <index> [depth]` | Expand a noteLog entry into a note via LLM |
 | `notes` | List recent notes |
 | `recall <topic>` | Search all past input via LLM |
 | `aggregate` | Classify new log entries into topics via LLM |
 | `topic add <name>` | Manually create a topic |
 | `topic about <id\|slug> [text]` | View or set a topic description |
+| `topic merge <source> <target>` | Merge source topic into target (entries, notes, synthesis) |
 | `reset topics` | Undo aggregation — move topic entries back to rawLog |
 | `sync` | Update per-topic synthesis with new entries |
 | `resynth` | Full rewrite of all synthesis (deep model) |

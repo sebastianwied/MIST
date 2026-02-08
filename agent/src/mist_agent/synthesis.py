@@ -7,11 +7,14 @@ from mist_core.settings import get_model
 from mist_core.storage import (
     find_topic,
     get_last_sync_time,
+    list_topic_notes,
     load_topic_files,
     load_topic_index,
+    load_topic_note,
     load_topic_notelog,
     load_topic_synthesis,
     save_context,
+    save_topic_notelog_md,
     save_topic_synthesis,
     set_last_sync_time,
 )
@@ -25,6 +28,19 @@ def _slugify(heading: str) -> str:
     """Lowercase, replace non-alnum with hyphens, collapse, strip."""
     slug = re.sub(r"[^a-z0-9]+", "-", heading.lower())
     return slug.strip("-")
+
+
+def _format_topic_notes(slug: str) -> str:
+    """Load all .md notes for a topic, formatted for LLM context."""
+    filenames = list_topic_notes(slug)
+    parts = []
+    for fn in filenames:
+        if fn == "notelog.md":
+            continue
+        content = load_topic_note(slug, fn)
+        if content.strip():
+            parts.append(f"## {fn}\n\n{content}")
+    return "\n\n".join(parts)
 
 
 # --- Context generation ---
@@ -69,13 +85,17 @@ def handle_sync(output: Writer = print) -> None:
 
         current_synthesis = load_topic_synthesis(topic.slug)
         formatted = _format_entries(entries)
+        notes = _format_topic_notes(topic.slug)
         prompt = TOPIC_SYNC_PROMPT.format(
             topic_name=topic.name,
             current_synthesis=current_synthesis or "(no existing synthesis)",
             new_entries=formatted,
+            notes=notes or "(no long-form notes)",
         )
         result = call_ollama(prompt, command="sync")
         save_topic_synthesis(topic.slug, result)
+        all_entries = load_topic_notelog(topic.slug)
+        save_topic_notelog_md(topic.slug, all_entries)
         output(f"  Updated: {topic.name}")
         any_updated = True
 
@@ -112,12 +132,15 @@ def handle_resynth(output: Writer = print) -> None:
             continue
 
         formatted = _format_entries(entries)
+        notes = _format_topic_notes(topic.slug)
         prompt = TOPIC_RESYNTH_PROMPT.format(
             topic_name=topic.name,
             all_entries=formatted,
+            notes=notes or "(no long-form notes)",
         )
         result = call_ollama(prompt, command="resynth")
         save_topic_synthesis(topic.slug, result)
+        save_topic_notelog_md(topic.slug, entries)
         output(f"  Resynthesized: {topic.name}")
 
         if entries and (latest_time is None or entries[-1].time > latest_time):
@@ -152,12 +175,15 @@ def handle_synthesis(identifier: str, output: Writer = print) -> None:
         return
 
     formatted = _format_entries(entries)
+    notes = _format_topic_notes(topic.slug)
     prompt = TOPIC_RESYNTH_PROMPT.format(
         topic_name=topic.name,
         all_entries=formatted,
+        notes=notes or "(no long-form notes)",
     )
     result = call_ollama(prompt, command="synthesis")
     save_topic_synthesis(topic.slug, result)
+    save_topic_notelog_md(topic.slug, entries)
     output(f"Synthesis updated for '{topic.name}'.")
 
     _generate_context(output=output)

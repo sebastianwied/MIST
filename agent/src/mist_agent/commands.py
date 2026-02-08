@@ -5,10 +5,10 @@ from typing import Callable
 from mist_core.settings import get_model, get_setting, is_valid_setting_key, load_settings, MODEL_COMMANDS, set_setting
 from mist_core.types import Writer
 
-from .aggregate import handle_aggregate, handle_reset_topics, handle_topic_about, handle_topic_add
+from .aggregate import handle_aggregate, handle_reset_topics, handle_topic_about, handle_topic_add, handle_topic_merge
 from .event_command import handle_event_add, handle_event_delete, handle_event_list
 from .extraction import apply_extracted_items, extract_items
-from .notes import handle_note, handle_note_list, handle_note_new, handle_notes, handle_recall
+from .notes import handle_note, handle_note_edit, handle_note_file, handle_note_list, handle_note_new, handle_note_promote, handle_notes, handle_recall
 from .persona_command import handle_persona
 from .respond import handle_text
 from .synthesis import handle_resynth, handle_sync, handle_synthesis
@@ -77,7 +77,10 @@ _HELP_TEXT = """\
 Commands:
   note <text>                  Save a note (no LLM call)
   note new [topic] <title>     Create a note (in topic or as draft)
+  note edit <topic|drafts> <file>  Open a note for editing
+  note promote <topic> <index> [depth]  Expand noteLog entry to note
   note list <topic|drafts>     List notes in a topic or drafts
+  note file <filename> <topic> File a draft into a topic
   notes                        List recent notes
   recall <topic>               Search past input via LLM
   task add <title> [due:DATE]  Create a task
@@ -91,6 +94,7 @@ Commands:
   aggregate                    Classify new notes into topics
   topic add <name>             Manually create a topic
   topic about <id|slug> [text] View or set a topic's description
+  topic merge <source> <target>  Merge source topic into target
   reset topics                 Undo aggregation, restore entries to rawLog
   sync                         Update synthesis with new themes
   resynth                      Full synthesis rewrite (deep model)
@@ -153,8 +157,27 @@ def dispatch(
             topic_id, _, title = sub_arg.strip().partition(" ")
             handle_note_new(topic_id, title.strip(), output=output)
             return None
+        if sub_lower == "edit" and sub_arg.strip():
+            parts = sub_arg.strip().split(None, 1)
+            topic_id = parts[0]
+            filename = parts[1] if len(parts) > 1 else ""
+            handle_note_edit(topic_id, filename.strip(), output=output)
+            return None
+        if sub_lower == "promote" and sub_arg.strip():
+            parts = sub_arg.strip().split()
+            topic_id = parts[0]
+            entry_index = parts[1] if len(parts) > 1 else ""
+            depth = parts[2] if len(parts) > 2 else "draft"
+            handle_note_promote(topic_id, entry_index, depth, output=output)
+            return None
         if sub_lower == "list" and sub_arg.strip():
             handle_note_list(sub_arg.strip(), output=output)
+            return None
+        if sub_lower == "file" and sub_arg.strip():
+            parts = sub_arg.strip().split(None, 1)
+            filename = parts[0]
+            topic_id = parts[1] if len(parts) > 1 else ""
+            handle_note_file(filename, topic_id, output=output)
             return None
         handle_note(arg, output=output)
         return None
@@ -214,8 +237,13 @@ def dispatch(
             identifier = parts[0]
             text = parts[1] if len(parts) > 1 else ""
             handle_topic_about(identifier, text, output=output)
+        elif sub == "merge" and sub_arg.strip():
+            parts = sub_arg.strip().split(None, 1)
+            source_id = parts[0]
+            target_id = parts[1] if len(parts) > 1 else ""
+            handle_topic_merge(source_id, target_id, output=output)
         else:
-            output("Usage: topic add <name> | topic about <id|slug> [text]")
+            output("Usage: topic add <name> | topic about <id|slug> [text] | topic merge <source> <target>")
         return None
     if stripped == "reset topics":
         handle_reset_topics(output=output)

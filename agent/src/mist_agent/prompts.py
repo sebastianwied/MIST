@@ -121,10 +121,16 @@ New entries for this topic:
 
 {new_entries}
 
+Long-form notes for this topic:
+
+{notes}
+
 Update the synthesis:
 - Integrate the new entries into the existing synthesis.
+- Incorporate insights from the long-form notes alongside the log entries.
 - Preserve important existing content that is still relevant.
 - Add new information, developments, or shifts in thinking.
+- Use [[topic-slug]] to reference other topics when relevant.
 - Be concise. Capture the essence, not every detail.
 - Do not invent information or add advice.
 
@@ -137,8 +143,14 @@ Here are all entries for this topic:
 
 {all_entries}
 
+Long-form notes for this topic:
+
+{notes}
+
 Write the synthesis from scratch:
 - Identify recurring patterns, open questions, and connections between ideas.
+- Incorporate insights from the long-form notes alongside the log entries.
+- Use [[topic-slug]] to reference other topics when relevant.
 - Be concise. Capture the essence, not every detail.
 - Do not invent information or add advice.
 
@@ -186,6 +198,50 @@ Rules:
 - Do not invent tasks or events that are not in the message.
 - If a date/time is vague or missing, use null.
 - Output ONLY valid JSON, nothing else."""
+
+NOTE_PROMOTE_OUTLINE_PROMPT = """\
+You are expanding a short log entry into a structured outline for the topic "{topic_name}".
+
+Entry:
+{entry_text}
+
+Topic synthesis (for context):
+{topic_synthesis}
+
+Create a bullet-point outline that expands on the ideas in this entry. \
+Include sub-points where appropriate. Do not invent information — only \
+elaborate on what is stated or clearly implied. Output only the outline."""
+
+NOTE_PROMOTE_DRAFT_PROMPT = """\
+You are expanding a short log entry into a standalone note for the topic "{topic_name}".
+
+Entry:
+{entry_text}
+
+Topic synthesis (for context):
+{topic_synthesis}
+
+Write a short, clear note (2-4 paragraphs) that develops the ideas in this entry. \
+Use plain language. Do not invent information — only elaborate on what is stated \
+or clearly implied. Output only the note text."""
+
+NOTE_PROMOTE_DEEP_PROMPT = """\
+You are expanding a short log entry into a detailed analysis for the topic "{topic_name}".
+
+Entry:
+{entry_text}
+
+Topic synthesis (for context):
+{topic_synthesis}
+
+Write a thorough analysis that:
+- Develops the core ideas in this entry
+- Draws connections to other aspects of the topic (based on the synthesis)
+- Uses [[topic-slug]] or [[topic-slug/note-name]] to reference related topics and notes
+- Identifies open questions or tensions
+
+Do not invent information beyond what is stated or implied by the entry and synthesis. \
+Output only the analysis text."""
 
 PROFILE_EXTRACTION_PROMPT = """\
 You are extracting factual information about the user from their conversation log.

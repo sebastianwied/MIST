@@ -25,6 +25,11 @@ def main() -> None:
         action="store_true",
         help="Launch in demo mode (no broker needed)",
     )
+    parser.add_argument(
+        "--no-managed",
+        action="store_true",
+        help="Skip launcher screen (don't manage broker/agent processes)",
+    )
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -36,7 +41,10 @@ def main() -> None:
         from .demo import DemoApp
         DemoApp().run()
     else:
-        MistApp(socket_path=args.socket_path).run()
+        MistApp(
+            socket_path=args.socket_path,
+            managed=not args.no_managed,
+        ).run()
 
 
 if __name__ == "__main__":

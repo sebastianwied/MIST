@@ -75,7 +75,7 @@ pytest agent/tests/ -v
 
 | File | Purpose |
 |------|---------|
-| `storage.py` | JSONL persistence, topic index, note file helpers, path constants |
+| `storage.py` | JSONL persistence, topic index, note file helpers, topic merge, draft filing, path constants |
 | `settings.py` | Settings load/save, model resolution chain |
 | `protocol.py` | Message envelope, message types |
 | `transport.py` | Async Unix socket client/server |
@@ -118,7 +118,7 @@ pytest agent/tests/ -v
 | `manifest.py` | Agent metadata: name, capabilities, widget declarations |
 | `commands.py` | Central command dispatcher |
 | `notes.py` | Note/recall/note-new/note-list handlers |
-| `aggregate.py` | LLM-based topic classification and routing |
+| `aggregate.py` | LLM-based topic classification, routing, and topic merge |
 | `synthesis.py` | Per-topic and global synthesis generation |
 | `view_command.py` | `view`, `edit`, `save_edit` handlers |
 | `respond.py` | Free-text LLM response handler |
@@ -152,7 +152,7 @@ Agents declare widgets in their manifest. The TUI dynamically imports and mounts
 ## Data Flow
 
 - **Input logging**: all input logged to `data/notes/rawLog.jsonl` as JSONL (`{time, source, text}`)
-- **Aggregation**: `aggregate` classifies rawLog entries into topics via LLM, routes to `data/topics/<slug>/noteLog.jsonl`, archives to `data/notes/archive.jsonl`
+- **Aggregation**: `aggregate` classifies rawLog entries into topics via LLM, routes to `data/topics/<slug>/noteLog.jsonl`, archives to `data/notes/archive.jsonl`. `topic merge` combines two topics into one.
 - **Notes**: `note new [topic] <title>` creates `.md` files in `data/topics/<slug>/notes/` or `data/notes/drafts/`
 - **Synthesis**: `sync` generates per-topic synthesis; `resynth` does full rewrite. Global context at `data/synthesis/context.md`
 - **Tasks/Events**: stored in `data/mist.db` (SQLite)
@@ -170,6 +170,15 @@ Model resolution: `settings.model_<command>` → `settings.model` → built-in d
 ## Broker Protocol
 
 Messages are JSON objects, newline-delimited, over Unix domain sockets. See `ARCHITECTURE.md` for the full protocol spec including message types, shared service requests, and agent manifest format.
+
+## Token Usage
+
+Be mindful of token consumption. Prefer targeted file reads over broad exploration. Use Grep/Glob to locate what you need before reading full files. Avoid re-reading files already in context. When running tests, run only the relevant test suite rather than all four packages unless verifying a cross-cutting change.
+
+## Future Direction
+
+- **Desktop app → broker**: The macOS desktop app should connect to the broker (via TCP or WebSocket) instead of the legacy FastAPI server. Same protocol as the TUI.
+- **Administrative model**: A lightweight always-running model (in the desktop app and default TUI) that sits above individual agents. It can see all agents registered with the broker, route user intent to the right agent, orchestrate multi-agent workflows, and provide a unified conversational interface without the user needing to know which agent handles what.
 
 Sub-commands (colon-prefixed) are used for multi-step TUI flows that bypass normal dispatch:
 - `persona:get`, `persona:draft`, `persona:save`

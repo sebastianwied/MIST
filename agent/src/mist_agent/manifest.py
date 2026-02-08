@@ -1,5 +1,11 @@
 """Agent manifest: declares capabilities and widgets for broker registration."""
 
+AGENT_ENTRY = {
+    "name": "mist",
+    "command": "mist-agent",
+    "description": "Reflective journaling companion",
+}
+
 MANIFEST = {
     "name": "mist",
     "description": "Reflective journaling companion",

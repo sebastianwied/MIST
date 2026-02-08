@@ -14,6 +14,7 @@ from mist_core.storage import (
     find_topic,
     load_topic_about,
     load_topic_index,
+    merge_topics,
     parse_rawlog,
     reset_topics,
     save_topic_about,
@@ -310,6 +311,27 @@ def handle_topic_about(identifier: str, text: str, output: Writer = print) -> No
         return
     save_topic_about(topic.slug, text)
     output(f"Description set for '{topic.name}'.")
+
+
+def handle_topic_merge(source_id: str, target_id: str, output: Writer = print) -> None:
+    """Merge source topic into target topic."""
+    if not target_id:
+        output("Usage: topic merge <source> <target>")
+        return
+    index = load_topic_index()
+    source = find_topic(source_id, index)
+    if source is None:
+        output(f"Source topic '{source_id}' not found. Use 'view topics' to list.")
+        return
+    target = find_topic(target_id, index)
+    if target is None:
+        output(f"Target topic '{target_id}' not found. Use 'view topics' to list.")
+        return
+    if source.slug == target.slug:
+        output("Source and target are the same topic.")
+        return
+    count = merge_topics(source.slug, target.slug)
+    output(f"Merged {count} entries from '{source.name}' into '{target.name}'. Source topic deleted.")
 
 
 def handle_reset_topics(output: Writer = print) -> None:
