@@ -8,22 +8,17 @@ __pycache__/
 *.pyo
 *.sock
 env/
+.venv/
 
 # Xcode user data
 xcuserdata/
 xcshareddata/
 
-# User data (notes, journal, state)
-data/notes/
-data/agentJournal.md
-data/state/
-data/synthesis/
-data/topics/
+# Runtime data
 data/mist.db
-# data/config/user.md
-# data/config/persona.md
-# data/config/model.conf
-# data/config/deep_model.conf
-# data/config/avatar.png
-# data/config/settings.json
+data/broker/
+data/agents/
+data/config/settings.json
 
+# Tauri build artifacts
+ui/src-tauri/target/
