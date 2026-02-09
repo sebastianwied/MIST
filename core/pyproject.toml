@@ -1,0 +1,12 @@
+[project]
+name = "mist-core"
+version = "2.0.0"
+description = "MIST core process: services, broker, admin agent, transport"
+requires-python = ">=3.13"
+dependencies = ["ollama", "websockets"]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
