@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicedoc/tauri-schema/master/tauri.conf.schema.json",
+  "productName": "MIST",
+  "version": "2.0.0",
+  "identifier": "com.mist.app",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "title": "MIST",
+    "windows": [
+      {
+        "label": "main",
+        "title": "MIST",
+        "width": 1100,
+        "height": 750,
+        "minWidth": 800,
+        "minHeight": 500,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' ws://127.0.0.1:8765; style-src 'self' 'unsafe-inline'"
+    }
+  }
+}

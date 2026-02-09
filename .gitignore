@@ -20,5 +20,9 @@ data/broker/
 data/agents/
 data/config/settings.json
 
-# Tauri build artifacts
+# Node
+node_modules/
+
+# Tauri / Vite build artifacts
+ui/dist/
 ui/src-tauri/target/
