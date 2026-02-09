@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/nicedoc/tauri-schema/master/tauri.conf.schema.json",
   "productName": "MIST",
   "version": "2.0.0",
-  "identifier": "com.mist.app",
+  "identifier": "com.mist.desktop",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
@@ -10,7 +10,6 @@
     "beforeBuildCommand": "npm run build"
   },
   "app": {
-    "title": "MIST",
     "windows": [
       {
         "label": "main",
