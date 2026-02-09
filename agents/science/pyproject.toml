@@ -7,6 +7,9 @@ dependencies = [
     "mist-client",
 ]
 
+[project.scripts]
+mist-science = "science_agent.agent:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8",
