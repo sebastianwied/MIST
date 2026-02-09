@@ -1,0 +1,12 @@
+[project]
+name = "mist-client"
+version = "2.0.0"
+description = "MIST agent client library — standalone SDK for building agents"
+requires-python = ">=3.13"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
