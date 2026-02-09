@@ -6,6 +6,7 @@ import argparse
 import asyncio
 import logging
 
+from .admin.agent import AdminAgent
 from .db import Database
 from .paths import Paths
 from .broker.registry import AgentRegistry
@@ -36,6 +37,15 @@ class Core:
         self.registry = AgentRegistry()
         self.services = ServiceDispatcher(self.paths, self.db, self.settings)
         self.router = MessageRouter(self.registry, self.services)
+        self.admin = AdminAgent(
+            paths=self.paths,
+            db=self.db,
+            settings=self.settings,
+            llm_queue=self.llm_queue,
+            registry=self.registry,
+            services=self.services,
+            router=self.router,
+        )
         self._unix_server = Server(self.router.handle, path=self.paths.socket_path)
         self._ws_server = WebSocketServer(
             self.router.handle, host=ws_host, port=ws_port,
@@ -46,6 +56,8 @@ class Core:
         self.db.connect()
         self.db.init_schema()
         log.info("database initialized at %s", self.paths.db)
+
+        self.admin.register()
 
         await self._unix_server.start()
         await self._ws_server.start()

@@ -217,6 +217,66 @@ class MessageRouter:
             except (ConnectionResetError, BrokenPipeError):
                 pass
 
+    # ── Public methods for in-process agents ──────────────────────────
+
+    async def deliver_response(self, msg: Message) -> None:
+        """Deliver a response from the in-process admin agent."""
+        pending = self._pending.pop(msg.reply_to, None) if msg.reply_to else None
+        if pending is None:
+            log.warning("admin response with no pending command: reply_to=%s", msg.reply_to)
+            return
+        try:
+            await pending.origin_conn.send(msg)
+        except (ConnectionResetError, BrokenPipeError):
+            log.warning("failed to forward admin response to origin")
+
+    async def forward_command(self, original_msg: Message, target_id: str) -> None:
+        """Re-route a command from admin to another agent."""
+        target = self._registry.get_by_id(target_id)
+        if target is None:
+            pending = self._pending.pop(original_msg.id, None)
+            if pending:
+                await self._send_error(
+                    original_msg, pending.origin_conn, f"unknown agent: {target_id}",
+                )
+            return
+
+        # Create forwarded command keeping original sender and payload
+        fwd = Message.create(
+            MSG_COMMAND, original_msg.sender, target_id, original_msg.payload,
+        )
+
+        # Transfer pending tracking from original → forwarded
+        pending = self._pending.pop(original_msg.id, None)
+        if pending:
+            self._pending[fwd.id] = PendingCommand(
+                msg_id=fwd.id,
+                origin_conn=pending.origin_conn,
+                target_agent_id=target_id,
+            )
+
+        # Send to target agent
+        if target.privileged and target.conn is None and self._admin_handler:
+            await self._admin_handler(fwd)
+        elif target.conn is not None:
+            try:
+                await target.conn.send(fwd)
+            except (ConnectionResetError, BrokenPipeError):
+                log.warning("failed to forward command to %s", target_id)
+                self._pending.pop(fwd.id, None)
+                if pending:
+                    await self._send_error(
+                        original_msg, pending.origin_conn,
+                        f"agent disconnected: {target_id}",
+                    )
+        else:
+            self._pending.pop(fwd.id, None)
+            if pending:
+                await self._send_error(
+                    original_msg, pending.origin_conn,
+                    f"agent has no connection: {target_id}",
+                )
+
     # ── Helpers ──────────────────────────────────────────────────────
 
     async def _send_error(
