@@ -169,6 +169,45 @@ html, body {
   color: var(--error);
 }
 
+.chat-table-title,
+.chat-list-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: var(--accent);
+}
+
+.chat-table-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.chat-table-grid th {
+  text-align: left;
+  padding: 4px 10px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.chat-table-grid td {
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.chat-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.chat-list li {
+  padding: 3px 0;
+  font-size: 13px;
+}
+
 .chat-confirm {
   display: flex;
   flex-direction: column;

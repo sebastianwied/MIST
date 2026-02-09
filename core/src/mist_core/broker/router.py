@@ -19,6 +19,7 @@ from ..protocol import (
     MSG_ERROR,
     MSG_RESPONSE,
     MSG_SERVICE_REQUEST,
+    RESP_PROGRESS,
 )
 from ..transport import Connection, WebSocketConnection
 
@@ -167,7 +168,13 @@ class MessageRouter:
             await self._send_error(msg, conn, f"agent disconnected: {target_id}")
 
     async def _on_response(self, msg: Message, conn: Connection | WebSocketConnection) -> None:
-        pending = self._pending.pop(msg.reply_to, None) if msg.reply_to else None
+        # Progress responses keep the pending entry so the final response
+        # can still be routed back to the origin.
+        is_progress = msg.payload.get("type") == RESP_PROGRESS
+        if is_progress:
+            pending = self._pending.get(msg.reply_to) if msg.reply_to else None
+        else:
+            pending = self._pending.pop(msg.reply_to, None) if msg.reply_to else None
         if pending is None:
             log.warning("response with no pending command: reply_to=%s", msg.reply_to)
             return
@@ -230,7 +237,11 @@ class MessageRouter:
 
     async def deliver_response(self, msg: Message) -> None:
         """Deliver a response from the in-process admin agent."""
-        pending = self._pending.pop(msg.reply_to, None) if msg.reply_to else None
+        is_progress = msg.payload.get("type") == RESP_PROGRESS
+        if is_progress:
+            pending = self._pending.get(msg.reply_to) if msg.reply_to else None
+        else:
+            pending = self._pending.pop(msg.reply_to, None) if msg.reply_to else None
         if pending is None:
             log.warning("admin response with no pending command: reply_to=%s", msg.reply_to)
             return

@@ -4,12 +4,16 @@ import { sendCommand } from "../app";
 import {
   RESP_CONFIRM,
   RESP_ERROR,
+  RESP_LIST,
   RESP_PROGRESS,
+  RESP_TABLE,
   RESP_TEXT,
   type ConfirmContent,
   type ErrorContent,
+  type ListContent,
   type ProgressContent,
   type ResponsePayload,
+  type TableContent,
   type TextContent,
 } from "../protocol";
 import { store, type ChatEntry, type State } from "../store";
@@ -60,9 +64,8 @@ function render(container: HTMLElement, state: State): void {
   input.disabled = !state.connected;
   input.placeholder = state.connected ? "Type a command..." : "Disconnected";
 
-  // Render chat entries for active agent
-  const entries = state.chat.filter((e) => e.agentId === state.activeAgent);
-  renderEntries(log, entries);
+  // Show all chat entries — commands route through admin regardless of tab
+  renderEntries(log, state.chat);
 }
 
 function renderEntries(log: HTMLElement, entries: ChatEntry[]): void {
@@ -97,6 +100,10 @@ function renderResponse(resp: ResponsePayload): HTMLElement {
   switch (resp.type) {
     case RESP_TEXT:
       return renderText(resp.content as TextContent);
+    case RESP_TABLE:
+      return renderTable(resp.content as TableContent);
+    case RESP_LIST:
+      return renderList(resp.content as ListContent);
     case RESP_CONFIRM:
       return renderConfirm(resp.content as ConfirmContent);
     case RESP_PROGRESS:
@@ -104,7 +111,6 @@ function renderResponse(resp: ResponsePayload): HTMLElement {
     case RESP_ERROR:
       return renderError(resp.content as ErrorContent);
     default:
-      // For table/list/editor, show a summary in chat
       return renderGeneric(resp);
   }
 }
@@ -117,6 +123,56 @@ function renderText(content: TextContent): HTMLElement {
   } else {
     div.textContent = content.text;
   }
+  return div;
+}
+
+function renderTable(content: TableContent): HTMLElement {
+  const div = el("div", "chat-response chat-table");
+  if (content.title) {
+    const title = el("div", "chat-table-title");
+    title.textContent = content.title;
+    div.appendChild(title);
+  }
+  const table = document.createElement("table");
+  table.className = "chat-table-grid";
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  for (const col of content.columns) {
+    const th = document.createElement("th");
+    th.textContent = col;
+    headerRow.appendChild(th);
+  }
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+  const tbody = document.createElement("tbody");
+  for (const row of content.rows) {
+    const tr = document.createElement("tr");
+    for (const cell of row) {
+      const td = document.createElement("td");
+      td.textContent = cell != null ? String(cell) : "";
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  div.appendChild(table);
+  return div;
+}
+
+function renderList(content: ListContent): HTMLElement {
+  const div = el("div", "chat-response chat-list");
+  if (content.title) {
+    const title = el("div", "chat-list-title");
+    title.textContent = content.title;
+    div.appendChild(title);
+  }
+  const ul = document.createElement("ul");
+  for (const item of content.items) {
+    const li = document.createElement("li");
+    li.textContent = item;
+    ul.appendChild(li);
+  }
+  div.appendChild(ul);
   return div;
 }
 
