@@ -1,0 +1,22 @@
+2026-01-31T19:03:39
+source: note
+---
+
+want to be able to take notes on books?
+
+---
+time: 2026-01-31T19:06:42
+source: terminal
+---
+
+hi! testing if chats get saved
+
+---
+time: 2026-01-31T19:09:50
+source: note
+---
+
+next features for the AI agent: consider reworking the note synthesis system. In order to allow for larger windows of stored information, maybe build a sort of idea index which points to specific files, then write longer things for each of those topics.
+
+---
+time: 2026-01-31T19:11:21

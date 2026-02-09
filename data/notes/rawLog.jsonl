@@ -1,0 +1,9 @@
+{"time": "2026-02-04T23:05:46", "source": "note", "text": "Explore building systems of LLMs that talk to each other through the AI agent system."}
+{"time": "2026-02-04T23:07:15", "source": "note", "text": "For the agent system project: Build a scientific paper viewing system in the MIST tui? Need to think about images... But i think viewing papers in here with their text content maybe but expecially making a nice interface for searching and viewing lists of papers."}
+{"time": "2026-02-05T08:57:12", "source": "note", "text": "for the agent project, I think MIST should stand for modular integrated support technologies, not modular integrated services and technologies. I think the first captures it a bit better."}
+{"time": "2026-02-05T09:01:58", "source": "note", "text": "for the agent project, I want to explore more with making the LLMs chat with each other more and see if I can make that do anything interesting. Also explore recursive language models(?) to help with context. I think the lighterweight model I talk with should definitely be engineered on the prompt side and how I feed data into it. Want to work on the personality side more."}
+{"time": "2026-02-05T10:48:44", "source": "broker", "text": "topics"}
+{"time": "2026-02-05T11:03:57", "source": "note", "text": "project idea: dreaming note taker, notation app on phone that syncs with MIST which handles collating and logging dreams, and making connections between them."}
+{"time": "2026-02-05T11:17:10", "source": "note", "text": "for mist agent system, make standalone app to replace tui?"}
+{"time": "2026-02-05T15:08:21", "source": "note", "text": "animate black holes as computer background?"}
+{"time": "2026-02-05T16:27:08", "source": "note", "text": "llm agent project: Work on building more robust agent-type workflow for the LLM. Talking to itself, planning, etc to make better output. Let it try to come up with a good way to express and synthesize my notes."}

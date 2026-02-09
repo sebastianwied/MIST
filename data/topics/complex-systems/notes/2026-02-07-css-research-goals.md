@@ -1,0 +1,10 @@
+# CSS Research Goals - TOWARDS UNIFICATION!
+- There’s no foundation anything seems like it’s built on. So much seems reinvented in a million different ways with every paper people publish. The last time I feel like there was a foundation people actually built off was Axelrod’s tournaments. I want to work on building kind of a standard foundation to build off of, working probably from axelrods original paper. 
+- It just feels like everything I’m doing is built teetering on one foot on a slippery rock, sometimes falling forward and catching myself on Axelrod’s structure, but not enough to actually stand up. I want to build a solid platform, reinforced by Axelrod’s work, which I can build systematically off of, and potentially expand the platform to encompass more and more projects.
+- To do this, I want to first: establish a coherent, visible thing explaining the tournaments and all the knobs there are to control it, so I can clearly see where I’m branching off a new idea. That way I can tell a bit more clearly what’s actually changing in my stuff.
+- Next, establish all the knobs I have in the simulation I built. That way I can correspond changes I make to the knobs in Axelrod. Maybe make this a neat way to outline and present a framework.
+  - The core of a framework is the interaction governing it. The framework also provides a bunch of knobs through which to control the actual happenings of the framework.
+  - Presenting these in a clean way can let you more directly compare results and understand *what* changed.
+- Complex systems needs a reorganization I think. I think I could really build a solid foundation, starting with the Prisoner’s dilemma, which I expand into a way to 1) state a framework and 2) match systems to frameworks. This could really lead in big ways towards unification in complex systems!!
+- My focus right now needs to be on ORGANIZATION. Structuring knowledge and problems!!
+- Formulations of frameworks should be self-contained, readable high level descriptions of the functions of a system.

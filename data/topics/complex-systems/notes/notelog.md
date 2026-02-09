@@ -1,0 +1,6 @@
+# NoteLog
+
+**2026-02-01T19:41:53** (note)
+In the prisoners' dilemma currently exploring the conditions in which cooperative behavior can emerge from a sea of agents initialized with noise.
+
+---

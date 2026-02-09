@@ -1,0 +1,189 @@
+
+---
+time: 2026-01-31T19:03:39
+source: note
+---
+
+want to be able to take notes on books?
+
+---
+time: 2026-01-31T19:06:42
+source: terminal
+---
+
+hi! testing if chats get saved
+
+---
+time: 2026-01-31T19:09:50
+source: note
+---
+
+next features for the AI agent: consider reworking the note synthesis system. In order to allow for larger windows of stored information, maybe build a sort of idea index which points to specific files, then write longer things for each of those topics.
+
+---
+time: 2026-01-31T19:11:21
+source: note
+---
+
+Also, want to add task and calendar functionality. Also add chatter, work on companion more, voice cloning of MIST, daily research/news feeds
+
+---
+time: 2026-01-31T19:13:50
+source: terminal
+---
+
+done
+
+---
+time: 2026-01-31T19:14:06
+source: terminal
+---
+
+perosna
+
+---
+time: 2026-01-31T19:14:55
+source: terminal
+---
+
+what have I been thinking about lately?
+
+---
+time: 2026-01-31T19:15:05
+source: terminal
+---
+
+recall
+
+---
+time: 2026-01-31T19:21:05
+source: terminal
+---
+
+what have I been thinking about lately
+
+---
+time: 2026-01-31T21:35:07
+source: note
+---
+
+maybe look into editing md files in the mist repl app?
+
+---
+time: 2026-01-31T21:44:30
+source: terminal
+---
+
+what are you able to do?
+
+---
+time: 2026-01-31T21:49:47
+source: terminal
+---
+
+testing testing
+
+---
+time: 2026-01-31T21:53:21
+source: terminal
+---
+
+test
+
+---
+time: 2026-01-31T21:58:49
+source: terminal
+---
+
+test!
+
+---
+time: 2026-01-31T22:01:14
+source: terminal
+---
+
+test abc
+
+---
+time: 2026-01-31T22:07:09
+source: terminal
+---
+
+help
+
+---
+time: 2026-01-31T22:13:24
+source: terminal
+---
+
+help
+
+---
+time: 2026-01-31T22:23:29
+source: terminal
+---
+
+list
+
+---
+time: 2026-02-01T10:33:58
+source: terminal
+---
+
+hi!
+
+---
+time: 2026-02-01T10:34:56
+source: note
+---
+
+for LLM responses, add a way for it to flag a message as not a note, so dont add to the rawLog.
+
+---
+time: 2026-02-01T10:35:21
+source: note
+---
+
+add editing of md files to the mist tui
+
+---
+time: 2026-02-01T12:25:26
+source: terminal
+---
+
+I have particle homework due this coming tuesday. Can you add that as a task
+
+---
+time: 2026-02-01T12:28:36
+source: note
+---
+
+sometimes app gets slow
+
+---
+time: 2026-02-01T12:33:59
+source: terminal
+---
+
+hi! im testing the status line
+
+---
+time: 2026-02-01T12:42:04
+source: note
+---
+
+I think making a whole network of agent tools like this that network together could be really cool. Name them after pantheon characters: MIST for notes, chande for science, etc.
+
+---
+time: 2026-02-01T12:48:16
+source: note
+---
+
+and make a master agent which interacts with all of them. Maybe make it Caspian or Maddie
+
+---
+time: 2026-02-01T13:02:39
+source: note
+---
+
+maybe make the overall agent interactor platform called Reign of Winter

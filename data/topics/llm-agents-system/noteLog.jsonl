@@ -1,0 +1,11 @@
+{"time": "2026-01-31T19:06:42", "source": "terminal", "text": "hi! testing if chats get saved"}
+{"time": "2026-02-01T17:47:58", "source": "terminal", "text": "hey! quick test"}
+{"time": "2026-02-01T18:00:08", "source": "note", "text": "Long term, I want to make a system of agents which network together. Have each agent purpose built for specific tasks, have one centralizer route and manage them. Could name the organizer Reign of Winter and make some like MIST for notes, David for science stuff, etc..."}
+{"time": "2026-02-01T18:06:17", "source": "terminal", "text": "note"}
+{"time": "2026-02-01T18:07:15", "source": "terminal", "text": "test"}
+{"time": "2026-02-01T18:09:18", "source": "terminal", "text": "synthesis"}
+{"time": "2026-02-01T18:16:58", "source": "terminal", "text": "topics view"}
+{"time": "2026-02-01T19:42:28", "source": "note", "text": "Agent feature idea: Collate news/research feeds into a daily summary? Could go to say Arxiv and fetch any new papers under certain topics you select and build you a list of brief summaries of research as one part of the daily feed. Could also go to things like space news sites, any newsletters you want to follow, etc\u2026 Cassie was talking about being in awe of dobsons ability to follow whats happening in research environments."}
+{"time": "2026-02-02T14:10:58", "source": "note", "text": "for the agent project, maybe I should make a central terminal system I load up, and individual agents take over the receiving side of the ui. Maybe I can have a light model route things and have it automatically change who gets called. Make it easier to work on the agents and the ui differently"}
+{"time": "2026-02-02T14:52:10", "source": "note", "text": "MIST - Modular Integrated Services and Technology"}
+{"time": "2026-02-03T10:05:31", "source": "note", "text": "MIST: Want it to be a unified framework I interact with. Heavily modular on the agent side. - [ ] Allow me to write whole files. Include these in the aggregate command but within each topic folder have a folder of my note files. The ai should organize all the files I write.  It should also make a markdown file that\u2019s just all the notes I\u2019ve written thus far, separate from the synthesized file. - [ ] Optionally make other agent systems share or have separate personalities."}

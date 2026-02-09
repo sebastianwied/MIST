@@ -1,26 +1,16 @@
-/** Browser panel — interactive topic browser with drill-down and editing. */
+/** Browser panel — dispatches to topic browser or generic table/list browser. */
 
 import { onResponse, sendStructuredCommand } from "../app";
 import type {
   EditorContent,
   ListContent,
   ResponsePayload,
+  TableContent,
   TopicDetailContent,
 } from "../protocol";
 import { store, type State } from "../store";
 
-// Internal navigation state
-type View = "list" | "detail" | "editor";
-
-let currentView: View = "list";
-let currentSlug = "";
-let currentName = "";
-let detailData: TopicDetailContent | null = null;
-let editorFile = "";
-let editorTitle = "";
-let editorContent = "";
-let editorDirty = false;
-let lastPanelKey = "";
+// ── Mount ────────────────────────────────────────────────
 
 export function mountBrowserPanel(container: HTMLElement): void {
   store.subscribe((state) => render(container, state));
@@ -33,36 +23,57 @@ function render(container: HTMLElement, state: State): void {
     return;
   }
 
-  // Reset to list view when switching panels
+  // Dispatch to the right sub-renderer based on panel id
+  if (panel.id === "topics") {
+    renderTopicsBrowser(container, state);
+  } else {
+    renderGenericBrowser(container, state, panel.id, panel.label);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// Topics Browser (drill-down: list → detail → editor)
+// ══════════════════════════════════════════════════════════
+
+type TopicView = "list" | "detail" | "editor";
+
+let topicViewState: TopicView = "list";
+let topicSlug = "";
+let topicName = "";
+let topicDetailData: TopicDetailContent | null = null;
+let topicEditorFile = "";
+let topicEditorTitle = "";
+let topicEditorContent = "";
+let topicEditorDirty = false;
+let topicLastPanelKey = "";
+let topicItems: string[] = [];
+
+function renderTopicsBrowser(container: HTMLElement, state: State): void {
   const panelKey = `${state.activeAgent}:${state.activePanel}`;
-  if (panelKey !== lastPanelKey) {
-    lastPanelKey = panelKey;
-    currentView = "list";
-    detailData = null;
+  if (panelKey !== topicLastPanelKey) {
+    topicLastPanelKey = panelKey;
+    topicViewState = "list";
+    topicDetailData = null;
     fetchTopics();
   }
 
   container.innerHTML = "";
   const wrapper = el("div", "browser-panel");
 
-  switch (currentView) {
+  switch (topicViewState) {
     case "list":
-      renderTopicList(wrapper, state);
+      renderTopicList(wrapper);
       break;
     case "detail":
       renderTopicDetail(wrapper);
       break;
     case "editor":
-      renderEditor(wrapper);
+      renderTopicEditor(wrapper);
       break;
   }
 
   container.appendChild(wrapper);
 }
-
-// ── Topic list ──────────────────────────────────────────
-
-let topicItems: string[] = [];
 
 function fetchTopics(): void {
   const id = sendStructuredCommand("topics", {});
@@ -70,12 +81,11 @@ function fetchTopics(): void {
     if (resp.type === "list") {
       topicItems = (resp.content as ListContent).items;
     }
-    // Re-render
     store.update({});
   });
 }
 
-function renderTopicList(parent: HTMLElement, state: State): void {
+function renderTopicList(parent: HTMLElement): void {
   const header = el("div", "browser-header");
   const title = el("h3", "browser-title");
   title.textContent = "Topics";
@@ -100,7 +110,6 @@ function renderTopicList(parent: HTMLElement, state: State): void {
     const li = document.createElement("li");
     li.className = "browser-topic-item";
     li.textContent = item;
-    // Extract slug from "[id] slug: name"
     const match = item.match(/\]\s+(\S+):/);
     if (match) {
       const slug = match[1];
@@ -114,38 +123,37 @@ function renderTopicList(parent: HTMLElement, state: State): void {
 // ── Topic detail ────────────────────────────────────────
 
 function openTopic(slug: string): void {
-  currentSlug = slug;
-  currentView = "detail";
-  detailData = null;
+  topicSlug = slug;
+  topicViewState = "detail";
+  topicDetailData = null;
   store.update({});
 
   const id = sendStructuredCommand("topic", { action: "view", slug });
   onResponse(id, (resp) => {
     if (resp.type === "topic_detail") {
-      detailData = resp.content as TopicDetailContent;
-      currentName = detailData.name;
+      topicDetailData = resp.content as TopicDetailContent;
+      topicName = topicDetailData.name;
     }
     store.update({});
   });
 }
 
 function renderTopicDetail(parent: HTMLElement): void {
-  // Back button
   const header = el("div", "browser-header");
   const backBtn = el("button", "browser-btn");
   backBtn.textContent = "< Topics";
   backBtn.addEventListener("click", () => {
-    currentView = "list";
+    topicViewState = "list";
     store.update({});
   });
   header.appendChild(backBtn);
 
   const title = el("h3", "browser-title");
-  title.textContent = currentName || currentSlug;
+  title.textContent = topicName || topicSlug;
   header.appendChild(title);
   parent.appendChild(header);
 
-  if (!detailData) {
+  if (!topicDetailData) {
     const loading = el("p", "browser-empty");
     loading.textContent = "Loading...";
     parent.appendChild(loading);
@@ -162,15 +170,15 @@ function renderTopicDetail(parent: HTMLElement): void {
   const editSynthBtn = el("button", "browser-btn");
   editSynthBtn.textContent = "Edit";
   editSynthBtn.addEventListener("click", () =>
-    openEditor(currentSlug, "synthesis", `${currentName} — Synthesis`, detailData?.synthesis ?? ""),
+    openTopicEditor(topicSlug, "synthesis", `${topicName} — Synthesis`, topicDetailData?.synthesis ?? ""),
   );
   synthHeader.appendChild(editSynthBtn);
   synthSection.appendChild(synthHeader);
 
   const synthPreview = el("div", "browser-synthesis-preview");
-  if (detailData.synthesis) {
-    synthPreview.textContent = detailData.synthesis.slice(0, 500)
-      + (detailData.synthesis.length > 500 ? "..." : "");
+  if (topicDetailData.synthesis) {
+    synthPreview.textContent = topicDetailData.synthesis.slice(0, 500)
+      + (topicDetailData.synthesis.length > 500 ? "..." : "");
   } else {
     synthPreview.textContent = "(no synthesis yet — run 'sync')";
     synthPreview.classList.add("browser-empty-text");
@@ -179,9 +187,9 @@ function renderTopicDetail(parent: HTMLElement): void {
   parent.appendChild(synthSection);
 
   // Buffer count
-  if (detailData.buffer_count > 0) {
+  if (topicDetailData.buffer_count > 0) {
     const bufInfo = el("p", "browser-buffer-info");
-    bufInfo.textContent = `${detailData.buffer_count} unsynced entries in buffer`;
+    bufInfo.textContent = `${topicDetailData.buffer_count} unsynced entries in buffer`;
     parent.appendChild(bufInfo);
   }
 
@@ -189,23 +197,23 @@ function renderTopicDetail(parent: HTMLElement): void {
   const notesSection = el("div", "browser-section");
   const notesHeader = el("div", "browser-section-header");
   const notesTitle = el("h4", "browser-section-title");
-  notesTitle.textContent = `Notes (${detailData.notes.length})`;
+  notesTitle.textContent = `Notes (${topicDetailData.notes.length})`;
   notesHeader.appendChild(notesTitle);
   notesSection.appendChild(notesHeader);
 
-  if (detailData.notes.length === 0) {
+  if (topicDetailData.notes.length === 0) {
     const empty = el("p", "browser-empty-text");
     empty.textContent = "No long-form notes yet.";
     notesSection.appendChild(empty);
   } else {
     const notesList = document.createElement("ul");
     notesList.className = "browser-notes-list";
-    for (const filename of detailData.notes) {
+    for (const filename of topicDetailData.notes) {
       const li = document.createElement("li");
       li.className = "browser-note-item";
       li.textContent = filename;
       li.addEventListener("click", () =>
-        loadAndOpenEditor(currentSlug, filename, `${currentName} — ${filename}`),
+        loadAndOpenTopicEditor(topicSlug, filename, `${topicName} — ${filename}`),
       );
       notesList.appendChild(li);
     }
@@ -214,47 +222,46 @@ function renderTopicDetail(parent: HTMLElement): void {
   parent.appendChild(notesSection);
 }
 
-// ── Editor ──────────────────────────────────────────────
+// ── Topic editor ────────────────────────────────────────
 
-function openEditor(slug: string, filename: string, title: string, content: string): void {
-  currentSlug = slug;
-  editorFile = filename;
-  editorTitle = title;
-  editorContent = content;
-  editorDirty = false;
-  currentView = "editor";
+function openTopicEditor(slug: string, filename: string, title: string, content: string): void {
+  topicSlug = slug;
+  topicEditorFile = filename;
+  topicEditorTitle = title;
+  topicEditorContent = content;
+  topicEditorDirty = false;
+  topicViewState = "editor";
   store.update({});
 }
 
-function loadAndOpenEditor(slug: string, filename: string, title: string): void {
+function loadAndOpenTopicEditor(slug: string, filename: string, title: string): void {
   const id = sendStructuredCommand("topic", { action: "read", slug, filename });
   onResponse(id, (resp) => {
     if (resp.type === "editor") {
       const ed = resp.content as EditorContent;
-      openEditor(slug, filename, ed.title || title, ed.content);
+      openTopicEditor(slug, filename, ed.title || title, ed.content);
     }
   });
 }
 
-function renderEditor(parent: HTMLElement): void {
-  // Header with back and save
+function renderTopicEditor(parent: HTMLElement): void {
   const header = el("div", "browser-header");
 
   const backBtn = el("button", "browser-btn");
-  backBtn.textContent = `< ${currentName || currentSlug}`;
+  backBtn.textContent = `< ${topicName || topicSlug}`;
   backBtn.addEventListener("click", () => {
-    if (editorDirty && !confirm("Discard unsaved changes?")) return;
-    openTopic(currentSlug);
+    if (topicEditorDirty && !confirm("Discard unsaved changes?")) return;
+    openTopic(topicSlug);
   });
   header.appendChild(backBtn);
 
   const title = el("span", "browser-editor-title");
-  title.textContent = editorTitle;
+  title.textContent = topicEditorTitle;
   header.appendChild(title);
 
   const saveBtn = el("button", "browser-btn browser-save-btn") as HTMLButtonElement;
   saveBtn.textContent = "Save";
-  saveBtn.disabled = !editorDirty;
+  saveBtn.disabled = !topicEditorDirty;
   saveBtn.addEventListener("click", () => {
     const textarea = parent.querySelector<HTMLTextAreaElement>(".browser-editor-textarea");
     if (!textarea) return;
@@ -262,18 +269,17 @@ function renderEditor(parent: HTMLElement): void {
 
     const id = sendStructuredCommand("topic", {
       action: "write",
-      slug: currentSlug,
-      filename: editorFile,
+      slug: topicSlug,
+      filename: topicEditorFile,
       content,
     });
     onResponse(id, () => {
-      editorDirty = false;
-      editorContent = content;
-      // Refresh detail data after save
-      const detailId = sendStructuredCommand("topic", { action: "view", slug: currentSlug });
+      topicEditorDirty = false;
+      topicEditorContent = content;
+      const detailId = sendStructuredCommand("topic", { action: "view", slug: topicSlug });
       onResponse(detailId, (resp) => {
         if (resp.type === "topic_detail") {
-          detailData = resp.content as TopicDetailContent;
+          topicDetailData = resp.content as TopicDetailContent;
         }
       });
       store.update({});
@@ -282,18 +288,152 @@ function renderEditor(parent: HTMLElement): void {
   header.appendChild(saveBtn);
   parent.appendChild(header);
 
-  // Textarea editor
   const textarea = document.createElement("textarea");
   textarea.className = "browser-editor-textarea";
-  textarea.value = editorContent;
+  textarea.value = topicEditorContent;
   textarea.spellcheck = false;
   textarea.addEventListener("input", () => {
-    editorDirty = true;
-    // Update save button state
+    topicEditorDirty = true;
     const btn = parent.querySelector<HTMLButtonElement>(".browser-save-btn");
     if (btn) btn.disabled = false;
   });
   parent.appendChild(textarea);
+}
+
+// ══════════════════════════════════════════════════════════
+// Generic Browser (table/list from a fetch command)
+// ══════════════════════════════════════════════════════════
+
+// Map panel id → command to fetch data
+const PANEL_COMMANDS: Record<string, string> = {
+  library: "articles",
+};
+
+// Per-panel cached response
+const genericData = new Map<string, ResponsePayload>();
+let genericLastPanelKey = "";
+
+function renderGenericBrowser(
+  container: HTMLElement,
+  state: State,
+  panelId: string,
+  panelLabel: string,
+): void {
+  const panelKey = `${state.activeAgent}:${state.activePanel}`;
+  if (panelKey !== genericLastPanelKey) {
+    genericLastPanelKey = panelKey;
+    fetchGenericData(panelId);
+  }
+
+  container.innerHTML = "";
+  const wrapper = el("div", "browser-panel");
+
+  // Header
+  const header = el("div", "browser-header");
+  const title = el("h3", "browser-title");
+  title.textContent = panelLabel;
+  header.appendChild(title);
+
+  const refreshBtn = el("button", "browser-btn");
+  refreshBtn.textContent = "Refresh";
+  refreshBtn.addEventListener("click", () => fetchGenericData(panelId));
+  header.appendChild(refreshBtn);
+  wrapper.appendChild(header);
+
+  const data = genericData.get(panelId);
+  if (!data) {
+    const loading = el("p", "browser-empty");
+    loading.textContent = "Loading...";
+    wrapper.appendChild(loading);
+  } else if (data.type === "table") {
+    renderGenericTable(wrapper, data.content as TableContent);
+  } else if (data.type === "list") {
+    renderGenericList(wrapper, data.content as ListContent);
+  } else if (data.type === "text") {
+    const text = el("p", "browser-empty");
+    text.textContent = (data.content as { text: string }).text;
+    wrapper.appendChild(text);
+  } else if (data.type === "error") {
+    const err = el("p", "browser-empty");
+    err.textContent = (data.content as { message: string }).message;
+    err.style.color = "var(--error)";
+    wrapper.appendChild(err);
+  } else {
+    const empty = el("p", "browser-empty");
+    empty.textContent = "No data.";
+    wrapper.appendChild(empty);
+  }
+
+  container.appendChild(wrapper);
+}
+
+function fetchGenericData(panelId: string): void {
+  const command = PANEL_COMMANDS[panelId];
+  if (!command) return;
+
+  const id = sendStructuredCommand(command, {});
+  onResponse(id, (resp) => {
+    genericData.set(panelId, resp);
+    store.update({});
+  });
+}
+
+function renderGenericTable(parent: HTMLElement, content: TableContent): void {
+  if (content.title) {
+    const t = el("p", "chat-table-title");
+    t.textContent = content.title;
+    parent.appendChild(t);
+  }
+
+  const table = document.createElement("table");
+  table.className = "browser-table";
+
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  for (const col of content.columns) {
+    const th = document.createElement("th");
+    th.textContent = col;
+    headRow.appendChild(th);
+  }
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  for (const row of content.rows) {
+    const tr = document.createElement("tr");
+    for (const cell of row) {
+      const td = document.createElement("td");
+      td.textContent = cell != null ? String(cell) : "";
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  parent.appendChild(table);
+}
+
+function renderGenericList(parent: HTMLElement, content: ListContent): void {
+  if (content.title) {
+    const t = el("p", "chat-list-title");
+    t.textContent = content.title;
+    parent.appendChild(t);
+  }
+
+  if (content.items.length === 0) {
+    const empty = el("p", "browser-empty");
+    empty.textContent = "No items.";
+    parent.appendChild(empty);
+    return;
+  }
+
+  const list = document.createElement("ul");
+  list.className = "browser-list";
+  for (const item of content.items) {
+    const li = document.createElement("li");
+    li.textContent = item;
+    list.appendChild(li);
+  }
+  parent.appendChild(list);
 }
 
 // ── Helpers ─────────────────────────────────────────────

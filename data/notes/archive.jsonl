@@ -1,0 +1,77 @@
+{"time": "2026-01-31T19:03:39", "source": "note", "text": "want to be able to take notes on books?"}
+{"time": "2026-01-31T19:06:42", "source": "terminal", "text": "hi! testing if chats get saved"}
+{"time": "2026-01-31T19:09:50", "source": "note", "text": "next features for the AI agent: consider reworking the note synthesis system. In order to allow for larger windows of stored information, maybe build a sort of idea index which points to specific files, then write longer things for each of those topics."}
+{"time": "2026-01-31T19:11:21", "source": "note", "text": "Also, want to add task and calendar functionality. Also add chatter, work on companion more, voice cloning of MIST, daily research/news feeds"}
+{"time": "2026-01-31T19:13:50", "source": "terminal", "text": "done"}
+{"time": "2026-01-31T19:14:06", "source": "terminal", "text": "perosna"}
+{"time": "2026-01-31T19:14:55", "source": "terminal", "text": "what have I been thinking about lately?"}
+{"time": "2026-01-31T19:15:05", "source": "terminal", "text": "recall"}
+{"time": "2026-01-31T19:21:05", "source": "terminal", "text": "what have I been thinking about lately"}
+{"time": "2026-01-31T21:35:07", "source": "note", "text": "maybe look into editing md files in the mist repl app?"}
+{"time": "2026-01-31T21:44:30", "source": "terminal", "text": "what are you able to do?"}
+{"time": "2026-01-31T21:49:47", "source": "terminal", "text": "testing testing"}
+{"time": "2026-01-31T21:53:21", "source": "terminal", "text": "test"}
+{"time": "2026-01-31T21:58:49", "source": "terminal", "text": "test!"}
+{"time": "2026-01-31T22:01:14", "source": "terminal", "text": "test abc"}
+{"time": "2026-01-31T22:07:09", "source": "terminal", "text": "help"}
+{"time": "2026-01-31T22:13:24", "source": "terminal", "text": "help"}
+{"time": "2026-01-31T22:23:29", "source": "terminal", "text": "list"}
+{"time": "2026-02-01T10:33:58", "source": "terminal", "text": "hi!"}
+{"time": "2026-02-01T10:34:56", "source": "note", "text": "for LLM responses, add a way for it to flag a message as not a note, so dont add to the rawLog."}
+{"time": "2026-02-01T10:35:21", "source": "note", "text": "add editing of md files to the mist tui"}
+{"time": "2026-02-01T12:25:26", "source": "terminal", "text": "I have particle homework due this coming tuesday. Can you add that as a task"}
+{"time": "2026-02-01T12:28:36", "source": "note", "text": "sometimes app gets slow"}
+{"time": "2026-02-01T12:33:59", "source": "terminal", "text": "hi! im testing the status line"}
+{"time": "2026-02-01T12:42:04", "source": "note", "text": "I think making a whole network of agent tools like this that network together could be really cool. Name them after pantheon characters: MIST for notes, chande for science, etc."}
+{"time": "2026-02-01T12:48:16", "source": "note", "text": "and make a master agent which interacts with all of them. Maybe make it Caspian or Maddie"}
+{"time": "2026-02-01T13:02:39", "source": "note", "text": "maybe make the overall agent interactor platform called Reign of Winter"}
+{"time": "2026-02-01T17:38:20", "source": "note", "text": "test note for aggregate"}
+{"time": "2026-02-01T17:38:45", "source": "terminal", "text": "synthesis"}
+{"time": "2026-02-01T17:41:43", "source": "note", "text": "want to work on setup process for MIST. I want to get it ready to send to mom soon."}
+{"time": "2026-02-01T17:43:05", "source": "note", "text": "Long term, I want to make a system of agents which network together. Have each agent purpose built for specific tasks, have one centralizer route and manage them. Could name the organizer Reign of Winter and make some like MIST for notes, David for science stuff, etc..."}
+{"time": "2026-02-01T17:45:51", "source": "terminal", "text": "synthesis"}
+{"time": "2026-02-01T17:47:58", "source": "terminal", "text": "hey! quick test"}
+{"time": "2026-01-31T19:03:39", "source": "note", "text": "want to be able to take notes on books?"}
+{"time": "2026-01-31T19:06:42", "source": "terminal", "text": "hi! testing if chats get saved"}
+{"time": "2026-01-31T19:09:50", "source": "note", "text": "next features for the AI agent: consider reworking the note synthesis system. In order to allow for larger windows of stored information, maybe build a sort of idea index which points to specific files, then write longer things for each of those topics."}
+{"time": "2026-01-31T19:11:21", "source": "note", "text": "Also, want to add task and calendar functionality. Also add chatter, work on companion more, voice cloning of MIST, daily research/news feeds"}
+{"time": "2026-01-31T19:13:50", "source": "terminal", "text": "done"}
+{"time": "2026-01-31T19:14:55", "source": "terminal", "text": "what have I been thinking about lately?"}
+{"time": "2026-01-31T19:21:05", "source": "terminal", "text": "what have I been thinking about lately"}
+{"time": "2026-01-31T21:44:30", "source": "terminal", "text": "what are you able to do?"}
+{"time": "2026-01-31T21:53:21", "source": "terminal", "text": "test"}
+{"time": "2026-01-31T22:01:14", "source": "terminal", "text": "test abc"}
+{"time": "2026-01-31T22:07:09", "source": "terminal", "text": "help"}
+{"time": "2026-01-31T22:13:24", "source": "terminal", "text": "help"}
+{"time": "2026-02-01T10:35:21", "source": "note", "text": "add editing of md files to the mist tui"}
+{"time": "2026-02-01T12:25:26", "source": "terminal", "text": "I have particle homework due this coming tuesday. Can you add that as a task"}
+{"time": "2026-02-01T12:42:04", "source": "note", "text": "I think making a whole network of agent tools like this that network together could be really cool. Name them after pantheon characters: MIST for notes, chande for science, etc."}
+{"time": "2026-01-31T19:06:42", "source": "terminal", "text": "hi! testing if chats get saved"}
+{"time": "2026-01-31T22:01:14", "source": "terminal", "text": "test abc"}
+{"time": "2026-02-01T17:47:58", "source": "terminal", "text": "hey! quick test"}
+{"time": "2026-02-01T18:00:08", "source": "note", "text": "Long term, I want to make a system of agents which network together. Have each agent purpose built for specific tasks, have one centralizer route and manage them. Could name the organizer Reign of Winter and make some like MIST for notes, David for science stuff, etc..."}
+{"time": "2026-02-01T18:06:17", "source": "terminal", "text": "note"}
+{"time": "2026-02-01T18:06:46", "source": "note", "text": "want to work on setup process for MIST. I want to get it ready to send to mom soon."}
+{"time": "2026-02-01T18:07:15", "source": "terminal", "text": "test"}
+{"time": "2026-02-01T18:09:18", "source": "terminal", "text": "synthesis"}
+{"time": "2026-02-01T18:16:58", "source": "terminal", "text": "topics view"}
+{"time": "2026-02-01T19:41:53", "source": "note", "text": "In the prisoners' dilemma currently exploring the conditions in which cooperative behavior can emerge from a sea of agents initialized with noise."}
+{"time": "2026-02-01T19:42:28", "source": "note", "text": "Agent feature idea: Collate news/research feeds into a daily summary? Could go to say Arxiv and fetch any new papers under certain topics you select and build you a list of brief summaries of research as one part of the daily feed. Could also go to things like space news sites, any newsletters you want to follow, etc\u2026 Cassie was talking about being in awe of dobsons ability to follow whats happening in research environments."}
+{"time": "2026-02-01T20:06:49", "source": "note", "text": "platform built for recommending music and streamlining supporting artists"}
+{"time": "2026-02-01T20:06:55", "source": "note", "text": "Recommends songs from all over music, not limited to what you own/have access to. Has in depth music recommendation, playlist building, social aspects, and p2p music recommendation. Recommendation algorithms built on artists and users input on what songs, artists, and albums are similar."}
+{"time": "2026-02-01T20:07:00", "source": "note", "text": "Allow users to add links between songs, artists, and musicians. Use these connections to build playlists and recommend songs and artists. Allow users to define who they want to see more: big or small artist, etc."}
+{"time": "2026-02-01T20:07:05", "source": "note", "text": "make importing Spotify playlists trivially easy. Make onboarding as easy as possible. Also maybe make it so you can export playlists to Spotify?"}
+{"time": "2026-02-01T20:07:12", "source": "note", "text": "API built for plugging into a music library to play songs from the library. Won\u2019t play songs you don\u2019t have in your librsry. Idea is use it to find songs, have a tool go and pirate those songs, then play them."}
+{"time": "2026-02-01T20:07:17", "source": "note", "text": "How it supports musicians: allow the user to donate an amount of money and have that split among payments to the artists they are listening to. If you want to donate to a specific artist, do that. If you want to donate according to how much you listen to artists, do that. Say top 5, 10, 50 artists by song plays."}
+{"time": "2026-02-01T20:07:30", "source": "note", "text": "music platform has Features like day lists, radios, playlists based on one or multiple songs, etc"}
+{"time": "2026-02-02T14:10:58", "source": "note", "text": "for the agent project, maybe I should make a central terminal system I load up, and individual agents take over the receiving side of the ui. Maybe I can have a light model route things and have it automatically change who gets called. Make it easier to work on the agents and the ui differently"}
+{"time": "2026-02-02T14:52:10", "source": "note", "text": "MIST - Modular Integrated Services and Technology"}
+{"time": "2026-02-02T15:11:31", "source": "terminal", "text": "testing 123"}
+{"time": "2026-02-03T09:40:52", "source": "terminal", "text": "hi!"}
+{"time": "2026-02-03T10:05:31", "source": "note", "text": "MIST: Want it to be a unified framework I interact with. Heavily modular on the agent side. - [ ] Allow me to write whole files. Include these in the aggregate command but within each topic folder have a folder of my note files. The ai should organize all the files I write.  It should also make a markdown file that\u2019s just all the notes I\u2019ve written thus far, separate from the synthesized file. - [ ] Optionally make other agent systems share or have separate personalities."}
+{"time": "2026-02-03T13:55:21", "source": "note", "text": "Project idea: generative neural network for playing the game from econ? Bubble game Moinas and Pouget"}
+{"time": "2026-02-03T16:28:31", "source": "broker", "text": "edit context"}
+{"time": "2026-02-03T20:52:00", "source": "broker", "text": "edit"}
+{"time": "2026-02-03T20:52:18", "source": "broker", "text": "edit context"}
+{"time": "2026-02-03T21:15:45", "source": "broker", "text": "topics view"}
+{"time": "2026-02-03T21:26:11", "source": "note", "text": "project idea: i want to work on modeling plasmodial slime mold through the lens of complex systems science."}
