@@ -1,0 +1,24 @@
+[project]
+name = "notes-agent"
+version = "2.0.0"
+description = "MIST notes agent — note-taking and knowledge synthesis"
+requires-python = ">=3.12"
+dependencies = [
+    "mist-client",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.24",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

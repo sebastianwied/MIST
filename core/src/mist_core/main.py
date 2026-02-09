@@ -35,7 +35,7 @@ class Core:
         self.llm_client = OllamaClient(self.settings)
         self.llm_queue = LLMQueue(self.llm_client)
         self.registry = AgentRegistry()
-        self.services = ServiceDispatcher(self.paths, self.db, self.settings)
+        self.services = ServiceDispatcher(self.paths, self.db, self.settings, self.llm_queue)
         self.router = MessageRouter(self.registry, self.services)
         self.admin = AdminAgent(
             paths=self.paths,

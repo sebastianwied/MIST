@@ -8,6 +8,7 @@ from dataclasses import asdict
 from typing import Any
 
 from ..db import Database
+from ..llm.queue import LLMQueue, PRIORITY_AGENT
 from ..paths import Paths
 from ..protocol import Message, MSG_SERVICE_RESPONSE, MSG_SERVICE_ERROR
 from ..storage.articles import ArticleStore
@@ -35,10 +36,12 @@ class ServiceDispatcher:
         paths: Paths,
         db: Database,
         settings: Settings,
+        llm_queue: LLMQueue | None = None,
     ) -> None:
         self._paths = paths
         self._db = db
         self._settings = settings
+        self._llm_queue = llm_queue
         self._tasks = TaskStore(db)
         self._events = EventStore(db)
         self._articles = ArticleStore(db)
@@ -74,6 +77,8 @@ class ServiceDispatcher:
                     result = await self._handle_storage(payload, aid)
                 case "settings":
                     result = await self._handle_settings(payload)
+                case "llm":
+                    result = await self._handle_llm(payload)
                 case _:
                     raise ValueError(f"unknown service: {service}")
             reply = Message.reply(
@@ -240,6 +245,26 @@ class ServiceDispatcher:
                 return True
             case _:
                 raise ValueError(f"unknown storage action: {action}")
+
+    # ── LLM ────────────────────────────────────────────────────────
+
+    async def _handle_llm(self, payload: dict) -> Any:
+        action = payload.get("action")
+        params = payload.get("params", {})
+        if self._llm_queue is None:
+            raise ValueError("LLM queue not configured")
+        match action:
+            case "chat":
+                return await self._llm_queue.submit(
+                    prompt=params.get("prompt", ""),
+                    priority=PRIORITY_AGENT,
+                    model=params.get("model"),
+                    command=params.get("command"),
+                    temperature=params.get("temperature", 0.3),
+                    system=params.get("system"),
+                )
+            case _:
+                raise ValueError(f"unknown llm action: {action}")
 
     # ── Settings ─────────────────────────────────────────────────────
 
