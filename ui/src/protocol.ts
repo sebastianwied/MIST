@@ -79,10 +79,18 @@ export interface ErrorContent {
   details?: string;
 }
 
+export interface TopicDetailContent {
+  slug: string;
+  name: string;
+  synthesis: string;
+  notes: string[];
+  buffer_count: number;
+}
+
 // Structured response payload
 export interface ResponsePayload {
   type: string;
-  content: TextContent | TableContent | ListContent | EditorContent | ConfirmContent | ProgressContent | ErrorContent;
+  content: TextContent | TableContent | ListContent | EditorContent | ConfirmContent | ProgressContent | ErrorContent | TopicDetailContent;
 }
 
 // Agent manifest (from catalog)

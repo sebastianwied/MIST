@@ -69,3 +69,83 @@ async def handle_drafts(client: BrokerClient, msg: Message) -> None:
         await client.respond_text(msg, "No draft notes.")
         return
     await client.respond_list(msg, drafts, title="Drafts")
+
+
+async def handle_topic_view(client: BrokerClient, msg: Message, slug: str) -> None:
+    """Return a topic's synthesis and list of notes for the browser panel."""
+    if not slug:
+        await client.respond_error(msg, "Usage: topic view <slug>")
+        return
+
+    topic = await client.find_topic(slug)
+    if not topic:
+        await client.respond_error(msg, f"Topic '{slug}' not found.")
+        return
+
+    actual_slug = topic.get("slug", slug)
+    name = topic.get("name", actual_slug)
+    synthesis = await client.load_topic_synthesis(actual_slug)
+    notes = await client.list_topic_notes(actual_slug)
+    buffer = await client.load_topic_buffer(actual_slug)
+
+    # Return structured data the UI can render
+    await client._send_response(msg, "topic_detail", {
+        "slug": actual_slug,
+        "name": name,
+        "synthesis": synthesis,
+        "notes": notes,
+        "buffer_count": len(buffer),
+    })
+
+
+async def handle_topic_read(
+    client: BrokerClient, msg: Message, slug: str, filename: str,
+) -> None:
+    """Read a file from a topic and return it as an editor response."""
+    if not slug:
+        await client.respond_error(msg, "Usage: topic read <slug> [filename]")
+        return
+
+    topic = await client.find_topic(slug)
+    if not topic:
+        await client.respond_error(msg, f"Topic '{slug}' not found.")
+        return
+
+    actual_slug = topic.get("slug", slug)
+    name = topic.get("name", actual_slug)
+
+    if filename == "synthesis":
+        content = await client.load_topic_synthesis(actual_slug)
+        title = f"{name} — Synthesis"
+    else:
+        content = await client.load_topic_note(actual_slug, filename)
+        title = f"{name} — {filename}"
+
+    await client.respond_editor(
+        msg, content or "", title=title,
+        path=f"{actual_slug}/{filename}", read_only=False,
+    )
+
+
+async def handle_topic_write(
+    client: BrokerClient, msg: Message,
+    slug: str, filename: str, content: str,
+) -> None:
+    """Save content to a topic file."""
+    if not slug or not content:
+        await client.respond_error(msg, "Missing slug or content.")
+        return
+
+    topic = await client.find_topic(slug)
+    if not topic:
+        await client.respond_error(msg, f"Topic '{slug}' not found.")
+        return
+
+    actual_slug = topic.get("slug", slug)
+
+    if filename == "synthesis":
+        await client.save_topic_synthesis(actual_slug, content)
+    else:
+        await client.save_topic_note(actual_slug, filename, content)
+
+    await client.respond_text(msg, f"Saved {filename} in {actual_slug}.")

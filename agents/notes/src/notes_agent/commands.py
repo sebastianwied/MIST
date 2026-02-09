@@ -6,7 +6,10 @@ from mist_client import BrokerClient
 from mist_client.protocol import Message
 
 from .aggregate import handle_aggregate, handle_topic_add, handle_topic_merge
-from .notes import handle_drafts, handle_note, handle_notes, handle_recall, handle_topics
+from .notes import (
+    handle_drafts, handle_note, handle_notes, handle_recall, handle_topics,
+    handle_topic_view, handle_topic_read, handle_topic_write,
+)
 from .synthesis import handle_resynth, handle_sync, handle_synthesis
 
 
@@ -68,9 +71,22 @@ async def dispatch(client: BrokerClient, msg: Message) -> None:
                 source = args.get("source", "") or (parts[0] if parts else "")
                 target = args.get("target", "") or (parts[1] if len(parts) > 1 else "")
                 await handle_topic_merge(client, msg, source, target)
+            elif action == "view":
+                slug = args.get("slug", "") or text.strip()
+                await handle_topic_view(client, msg, slug)
+            elif action == "read":
+                parts = text.strip().split(None, 1) if text else []
+                slug = args.get("slug", "") or (parts[0] if parts else "")
+                filename = args.get("filename", "") or (parts[1] if len(parts) > 1 else "synthesis")
+                await handle_topic_read(client, msg, slug, filename)
+            elif action == "write":
+                slug = args.get("slug", "")
+                filename = args.get("filename", "synthesis")
+                content = args.get("content", "")
+                await handle_topic_write(client, msg, slug, filename, content)
             else:
                 await client.respond_error(
-                    msg, "Usage: topic add <name> | topic merge <source> <target>",
+                    msg, "Usage: topic add|merge|view|read|write <args>",
                 )
 
         case _:

@@ -195,6 +195,27 @@ class BrokerClient:
             "storage", "save_topic_synthesis", {"slug": slug, "content": content},
         )
 
+    async def list_topic_notes(self, slug: str) -> list[str]:
+        return await self._service_request(
+            "storage", "list_topic_notes", {"slug": slug},
+        )
+
+    async def load_topic_note(self, slug: str, filename: str) -> str:
+        return await self._service_request(
+            "storage", "load_topic_note", {"slug": slug, "filename": filename},
+        )
+
+    async def save_topic_note(self, slug: str, filename: str, content: str) -> bool:
+        return await self._service_request(
+            "storage", "save_topic_note",
+            {"slug": slug, "filename": filename, "content": content},
+        )
+
+    async def create_topic_note(self, slug: str, title: str) -> str:
+        return await self._service_request(
+            "storage", "create_topic_note", {"slug": slug, "title": title},
+        )
+
     async def list_drafts(self) -> list[str]:
         return await self._service_request("storage", "list_drafts")
 
@@ -380,6 +401,16 @@ class BrokerClient:
             {"type": RESP_CONFIRM, "content": {
                 "prompt": prompt, "options": options, "context": context,
             }},
+        )
+        await self._send(reply)
+
+    async def _send_response(
+        self, original: Message, resp_type: str, content: dict,
+    ) -> None:
+        """Send a custom-typed response."""
+        reply = Message.reply(
+            original, self.agent_id, MSG_RESPONSE,
+            {"type": resp_type, "content": content},
         )
         await self._send(reply)
 
