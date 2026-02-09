@@ -40,6 +40,7 @@ class PendingCommand:
     msg_id: str
     origin_conn: Connection | WebSocketConnection
     target_agent_id: str
+    original_msg_id: str | None = None  # set when command was forwarded
 
 
 class MessageRouter:
@@ -170,8 +171,16 @@ class MessageRouter:
         if pending is None:
             log.warning("response with no pending command: reply_to=%s", msg.reply_to)
             return
+        # Rewrite reply_to for forwarded commands so UI sees original ID
+        out = msg
+        if pending.original_msg_id:
+            out = Message(
+                type=msg.type, id=msg.id, sender=msg.sender, to=msg.to,
+                payload=msg.payload, reply_to=pending.original_msg_id,
+                timestamp=msg.timestamp,
+            )
         try:
-            await pending.origin_conn.send(msg)
+            await pending.origin_conn.send(out)
         except (ConnectionResetError, BrokenPipeError):
             log.warning("failed to forward response to origin")
 
@@ -225,8 +234,16 @@ class MessageRouter:
         if pending is None:
             log.warning("admin response with no pending command: reply_to=%s", msg.reply_to)
             return
+        # Rewrite reply_to for forwarded commands so UI sees original ID
+        out = msg
+        if pending.original_msg_id:
+            out = Message(
+                type=msg.type, id=msg.id, sender=msg.sender, to=msg.to,
+                payload=msg.payload, reply_to=pending.original_msg_id,
+                timestamp=msg.timestamp,
+            )
         try:
-            await pending.origin_conn.send(msg)
+            await pending.origin_conn.send(out)
         except (ConnectionResetError, BrokenPipeError):
             log.warning("failed to forward admin response to origin")
 
@@ -253,6 +270,7 @@ class MessageRouter:
                 msg_id=fwd.id,
                 origin_conn=pending.origin_conn,
                 target_agent_id=target_id,
+                original_msg_id=original_msg.id,
             )
 
         # Send to target agent

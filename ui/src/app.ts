@@ -84,10 +84,16 @@ export function sendCommand(agentId: string, text: string): string {
     text: rest,
   };
 
-  const msg = createMessage(MSG_COMMAND, UI_ID, agentId, payload);
+  // Always route through admin — it handles forwarding to the right agent.
+  // Find admin agent ID from the catalog.
+  const state = store.get();
+  const admin = state.agents.find((a) => a.name === "admin");
+  const targetId = admin?.agent_id ?? "admin-0";
+
+  const msg = createMessage(MSG_COMMAND, UI_ID, targetId, payload);
   send(msg);
 
-  // Add pending entry to chat
+  // Tag chat entry with the *visual* agent tab, not the routing target
   const entry: ChatEntry = {
     id: msg.id,
     command: text,
